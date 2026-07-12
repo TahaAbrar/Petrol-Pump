@@ -10,14 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ServicesRouteImport } from './routes/services'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as ServicesIdRouteImport } from './routes/services.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as EmployeesIdRouteImport } from './routes/employees.$id'
+import { Route as AdminVideosRouteImport } from './routes/admin.videos'
 import { Route as AdminSiteRouteImport } from './routes/admin.site'
+import { Route as AdminServicesRouteImport } from './routes/admin.services'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminPagesRouteImport } from './routes/admin.pages'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -29,6 +34,11 @@ import { Route as AdminAccountRouteImport } from './routes/admin.account'
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -46,6 +56,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ServicesRoute,
+} as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,6 +70,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesIdRoute = ServicesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ServicesRoute,
 } as any)
 const EventsIdRoute = EventsIdRouteImport.update({
   id: '/$id',
@@ -66,9 +86,19 @@ const EmployeesIdRoute = EmployeesIdRouteImport.update({
   path: '/employees/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVideosRoute = AdminVideosRouteImport.update({
+  id: '/admin/videos',
+  path: '/admin/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSiteRoute = AdminSiteRouteImport.update({
   id: '/admin/site',
   path: '/admin/site',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminServicesRoute = AdminServicesRouteImport.update({
+  id: '/admin/services',
+  path: '/admin/services',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
@@ -111,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/events': typeof EventsRouteWithChildren
+  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -119,11 +150,15 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/pages': typeof AdminPagesRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/services': typeof AdminServicesRoute
   '/admin/site': typeof AdminSiteRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/employees/$id': typeof EmployeesIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/services/$id': typeof ServicesIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/services/': typeof ServicesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -136,17 +171,22 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/pages': typeof AdminPagesRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/services': typeof AdminServicesRoute
   '/admin/site': typeof AdminSiteRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/employees/$id': typeof EmployeesIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/services/$id': typeof ServicesIdRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
+  '/services': typeof ServicesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/events': typeof EventsRouteWithChildren
+  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -155,11 +195,15 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/pages': typeof AdminPagesRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/services': typeof AdminServicesRoute
   '/admin/site': typeof AdminSiteRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/employees/$id': typeof EmployeesIdRoute
   '/events/$id': typeof EventsIdRoute
+  '/services/$id': typeof ServicesIdRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/services/': typeof ServicesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,6 +211,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/events'
+    | '/services'
     | '/sitemap.xml'
     | '/admin/account'
     | '/admin/dashboard'
@@ -175,11 +220,15 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/pages'
     | '/admin/reviews'
+    | '/admin/services'
     | '/admin/site'
+    | '/admin/videos'
     | '/employees/$id'
     | '/events/$id'
+    | '/services/$id'
     | '/admin/'
     | '/events/'
+    | '/services/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -192,16 +241,21 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/pages'
     | '/admin/reviews'
+    | '/admin/services'
     | '/admin/site'
+    | '/admin/videos'
     | '/employees/$id'
     | '/events/$id'
+    | '/services/$id'
     | '/admin'
     | '/events'
+    | '/services'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/events'
+    | '/services'
     | '/sitemap.xml'
     | '/admin/account'
     | '/admin/dashboard'
@@ -210,17 +264,22 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/pages'
     | '/admin/reviews'
+    | '/admin/services'
     | '/admin/site'
+    | '/admin/videos'
     | '/employees/$id'
     | '/events/$id'
+    | '/services/$id'
     | '/admin/'
     | '/events/'
+    | '/services/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   EventsRoute: typeof EventsRouteWithChildren
+  ServicesRoute: typeof ServicesRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminAccountRoute: typeof AdminAccountRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
@@ -229,7 +288,9 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPagesRoute: typeof AdminPagesRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminServicesRoute: typeof AdminServicesRoute
   AdminSiteRoute: typeof AdminSiteRoute
+  AdminVideosRoute: typeof AdminVideosRoute
   EmployeesIdRoute: typeof EmployeesIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -241,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -264,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/': {
+      id: '/services/'
+      path: '/'
+      fullPath: '/services/'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof ServicesRoute
+    }
     '/events/': {
       id: '/events/'
       path: '/'
@@ -277,6 +352,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/services/$id': {
+      id: '/services/$id'
+      path: '/$id'
+      fullPath: '/services/$id'
+      preLoaderRoute: typeof ServicesIdRouteImport
+      parentRoute: typeof ServicesRoute
     }
     '/events/$id': {
       id: '/events/$id'
@@ -292,11 +374,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmployeesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/videos': {
+      id: '/admin/videos'
+      path: '/admin/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AdminVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/site': {
       id: '/admin/site'
       path: '/admin/site'
       fullPath: '/admin/site'
       preLoaderRoute: typeof AdminSiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/services': {
+      id: '/admin/services'
+      path: '/admin/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AdminServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/reviews': {
@@ -364,10 +460,25 @@ const EventsRouteChildren: EventsRouteChildren = {
 const EventsRouteWithChildren =
   EventsRoute._addFileChildren(EventsRouteChildren)
 
+interface ServicesRouteChildren {
+  ServicesIdRoute: typeof ServicesIdRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
+}
+
+const ServicesRouteChildren: ServicesRouteChildren = {
+  ServicesIdRoute: ServicesIdRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
+}
+
+const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
+  ServicesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   EventsRoute: EventsRouteWithChildren,
+  ServicesRoute: ServicesRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminAccountRoute: AdminAccountRoute,
   AdminDashboardRoute: AdminDashboardRoute,
@@ -376,7 +487,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminPagesRoute: AdminPagesRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminServicesRoute: AdminServicesRoute,
   AdminSiteRoute: AdminSiteRoute,
+  AdminVideosRoute: AdminVideosRoute,
   EmployeesIdRoute: EmployeesIdRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
-  Users, CalendarDays, Star, FileText, Clock, ArrowRight, Loader2, Settings,
+  Users, CalendarDays, Star, FileText, Clock, ArrowRight, Loader2, Settings, Fuel, Video,
 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { apiFetch, type DashboardStats } from "@/lib/api";
@@ -14,9 +14,9 @@ export const Route = createFileRoute("/admin/dashboard")({
 
 const CARDS = [
   { key: "employees", label: "Employees", icon: Users, to: "/admin/employees", color: "#e1252a" },
+  { key: "services", label: "Services", icon: Fuel, to: "/admin/services", color: "#0ea968" },
   { key: "events", label: "Events", icon: CalendarDays, to: "/admin/events", color: "#1f7ed6" },
   { key: "reviews", label: "Reviews", icon: Star, to: "/admin/reviews", color: "#f7941d" },
-  { key: "pages", label: "Pages", icon: FileText, to: "/admin/pages", color: "#0ea968" },
 ] as const;
 
 function DashboardPage() {
@@ -114,7 +114,9 @@ function DashboardPage() {
                 <QuickLink to="/admin/site" icon={Settings} label="Edit site info & contact details" />
                 <QuickLink to="/admin/pages" icon={FileText} label="Update page banners & content" />
                 <QuickLink to="/admin/employees" icon={Users} label="Add or edit employees" />
+                <QuickLink to="/admin/services" icon={Fuel} label="Manage station services" />
                 <QuickLink to="/admin/events" icon={CalendarDays} label="Manage events" />
+                <QuickLink to="/admin/videos" icon={Video} label="Upload featured videos" />
                 <QuickLink to="/admin/reviews" icon={Star} label="Add customer reviews" />
               </div>
             </div>

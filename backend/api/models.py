@@ -43,6 +43,7 @@ class PageContent(models.Model):
         ("home", "Home"),
         ("about", "About"),
         ("events", "Events"),
+        ("services", "Services"),
     ]
 
     key = models.CharField(max_length=40, unique=True, choices=KEY_CHOICES)
@@ -51,7 +52,10 @@ class PageContent(models.Model):
     body = models.TextField(blank=True)
     banner = models.ImageField(upload_to="banners/", blank=True, null=True)
     story_image = models.ImageField(upload_to="pages/", blank=True, null=True)
+    # Leadership portraits on About (CEO 1 / CEO 2 / Manager)
     founder_image = models.ImageField(upload_to="pages/", blank=True, null=True)
+    ceo2_image = models.ImageField(upload_to="pages/", blank=True, null=True)
+    manager_image = models.ImageField(upload_to="pages/", blank=True, null=True)
     # Flexible per-page blocks (e.g. home stats, about story sections, location).
     extra = models.JSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -115,6 +119,7 @@ class EventItem(models.Model):
     date = models.CharField(max_length=80, blank=True)  # free text e.g. "March 14, 2026"
     image = models.ImageField(upload_to="events/", blank=True, null=True)
     video = models.FileField(upload_to="events/videos/", blank=True, null=True)
+    featured = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
     text_colors = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -152,3 +157,69 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.rating}\u2605)"
+
+
+class ServiceImage(models.Model):
+    service = models.ForeignKey("ServiceItem", related_name="images", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="services/gallery/")
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return f"Image for {self.service.title}"
+
+
+class ServiceItem(models.Model):
+    """Station offerings — fuel grades, air, EV, convenience, etc."""
+
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True)
+    category = models.CharField(max_length=120, blank=True, default="General")
+    description = models.TextField(blank=True)
+    long_description = models.TextField(blank=True)
+    availability = models.CharField(max_length=120, blank=True, default="Available")
+    quantity = models.CharField(max_length=120, blank=True)
+    price = models.CharField(max_length=120, blank=True)
+    highlights = models.JSONField(default=list, blank=True)
+    image = models.ImageField(upload_to="services/", blank=True, null=True)
+    featured = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+    text_colors = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.title) or "service"
+            slug = base
+            i = 2
+            while ServiceItem.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{i}"
+                i += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+
+class FeaturedVideo(models.Model):
+    """Home-page featured video carousel (below hero banner)."""
+
+    title = models.CharField(max_length=200, blank=True)
+    video = models.FileField(upload_to="home/videos/")
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "-created_at"]
+        verbose_name = "Featured video"
+        verbose_name_plural = "Featured videos"
+
+    def __str__(self):
+        return self.title or f"Video #{self.pk}"

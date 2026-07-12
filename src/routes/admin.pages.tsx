@@ -83,6 +83,8 @@ function PagesPage() {
   const [file, setFile] = useState<File | null>(null);
   const [storyFile, setStoryFile] = useState<File | null>(null);
   const [founderFile, setFounderFile] = useState<File | null>(null);
+  const [ceo2File, setCeo2File] = useState<File | null>(null);
+  const [managerFile, setManagerFile] = useState<File | null>(null);
   const [textColors, setTextColors] = useState<TextColors>({});
   const [saving, setSaving] = useState(false);
 
@@ -98,6 +100,8 @@ function PagesPage() {
       setFile(null);
       setStoryFile(null);
       setFounderFile(null);
+      setCeo2File(null);
+      setManagerFile(null);
       setTextColors(bannerTextColors(parseTextColors(current.extra?.text_colors)));
       if (current.key === "home") {
         setHomeStats(parseHomeStats(current.extra));
@@ -145,9 +149,11 @@ function PagesPage() {
           leadership: {
             eyebrow: leadership.eyebrow.trim(),
             title: leadership.title.trim(),
-            quote: leadership.quote.trim(),
-            founderName: leadership.founderName.trim(),
-            founderRole: leadership.founderRole.trim(),
+            people: leadership.people.map((p) => ({
+              name: p.name.trim(),
+              role: p.role.trim(),
+              quote: p.quote.trim(),
+            })),
             stats: leadership.stats.map((s) => ({ v: s.v.trim(), l: s.l.trim() })),
           },
         };
@@ -161,6 +167,8 @@ function PagesPage() {
       if (file) imageFd.append("banner", file);
       if (storyFile) imageFd.append("story_image", storyFile);
       if (founderFile) imageFd.append("founder_image", founderFile);
+      if (ceo2File) imageFd.append("ceo2_image", ceo2File);
+      if (managerFile) imageFd.append("manager_image", managerFile);
       if ([...imageFd.keys()].length > 0) {
         await apiFetch(`/pages/${current.key}/`, { method: "PATCH", body: imageFd });
       }
@@ -171,6 +179,8 @@ function PagesPage() {
       setFile(null);
       setStoryFile(null);
       setFounderFile(null);
+      setCeo2File(null);
+      setManagerFile(null);
     } catch (e: any) {
       toast.error("Save failed", { description: e?.message });
     } finally {
@@ -292,22 +302,9 @@ function PagesPage() {
 
                   <SectionHeading
                     title="Leadership"
-                    description="Founder message and stats on the About page."
+                    description="Two CEOs and one Manager — each with photo, name, role and quote on the About page."
                   />
                   <div className="grid gap-4 rounded-2xl border border-border bg-background p-6">
-                    <ImageUpload
-                      label="Founder portrait"
-                      preview={
-                        founderFile
-                          ? URL.createObjectURL(founderFile)
-                          : current.founder_image
-                            ? mediaUrl(current.founder_image)
-                            : null
-                      }
-                      onChange={setFounderFile}
-                      buttonLabel="Change founder image"
-                      tall
-                    />
                     <Field
                       label="Section eyebrow"
                       value={leadership.eyebrow}
@@ -318,23 +315,95 @@ function PagesPage() {
                       value={leadership.title}
                       onChange={(v) => setLeadership((s) => ({ ...s, title: v }))}
                     />
-                    <TextArea
-                      label="Founder quote"
-                      value={leadership.quote}
-                      onChange={(v) => setLeadership((s) => ({ ...s, quote: v }))}
-                    />
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field
-                        label="Founder name"
-                        value={leadership.founderName}
-                        onChange={(v) => setLeadership((s) => ({ ...s, founderName: v }))}
-                      />
-                      <Field
-                        label="Founder role"
-                        value={leadership.founderRole}
-                        onChange={(v) => setLeadership((s) => ({ ...s, founderRole: v }))}
-                      />
-                    </div>
+
+                    {(
+                      [
+                        {
+                          label: "CEO 1",
+                          file: founderFile,
+                          setFile: setFounderFile,
+                          image: current.founder_image,
+                          buttonLabel: "Change CEO 1 photo",
+                        },
+                        {
+                          label: "CEO 2",
+                          file: ceo2File,
+                          setFile: setCeo2File,
+                          image: current.ceo2_image,
+                          buttonLabel: "Change CEO 2 photo",
+                        },
+                        {
+                          label: "Manager",
+                          file: managerFile,
+                          setFile: setManagerFile,
+                          image: current.manager_image,
+                          buttonLabel: "Change Manager photo",
+                        },
+                      ] as const
+                    ).map((slot, i) => {
+                      const person = leadership.people[i] ?? { name: "", role: "", quote: "" };
+                      return (
+                        <div
+                          key={slot.label}
+                          className="space-y-4 rounded-xl border border-border bg-muted/30 p-4"
+                        >
+                          <h4 className="text-sm font-semibold">{slot.label}</h4>
+                          <ImageUpload
+                            label={`${slot.label} portrait`}
+                            preview={
+                              slot.file
+                                ? URL.createObjectURL(slot.file)
+                                : slot.image
+                                  ? mediaUrl(slot.image)
+                                  : null
+                            }
+                            onChange={slot.setFile}
+                            buttonLabel={slot.buttonLabel}
+                            tall
+                          />
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <Field
+                              label="Name"
+                              value={person.name}
+                              onChange={(v) =>
+                                setLeadership((s) => ({
+                                  ...s,
+                                  people: s.people.map((p, idx) =>
+                                    idx === i ? { ...p, name: v } : p,
+                                  ),
+                                }))
+                              }
+                            />
+                            <Field
+                              label="Role"
+                              value={person.role}
+                              onChange={(v) =>
+                                setLeadership((s) => ({
+                                  ...s,
+                                  people: s.people.map((p, idx) =>
+                                    idx === i ? { ...p, role: v } : p,
+                                  ),
+                                }))
+                              }
+                              placeholder={i < 2 ? "CEO" : "Manager"}
+                            />
+                          </div>
+                          <TextArea
+                            label="Quote"
+                            value={person.quote}
+                            onChange={(v) =>
+                              setLeadership((s) => ({
+                                ...s,
+                                people: s.people.map((p, idx) =>
+                                  idx === i ? { ...p, quote: v } : p,
+                                ),
+                              }))
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+
                     <div className="space-y-3">
                       <Label>Leadership stats</Label>
                       {leadership.stats.map((stat, i) => (

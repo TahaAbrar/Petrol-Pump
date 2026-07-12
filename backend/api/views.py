@@ -6,12 +6,14 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import SiteSettings, PageContent, Employee, EventItem, EventImage, Review
+from .models import SiteSettings, PageContent, Employee, EventItem, EventImage, Review, ServiceItem, ServiceImage, FeaturedVideo
 from .serializers import (
     SiteSettingsSerializer,
     PageContentSerializer,
     EmployeeSerializer,
     EventItemSerializer,
+    ServiceItemSerializer,
+    FeaturedVideoSerializer,
     ReviewSerializer,
     LoginSerializer,
     UserSerializer,
@@ -124,6 +126,54 @@ class EventItemViewSet(viewsets.ModelViewSet):
         return Response(EventItemSerializer(event, context={"request": request}).data)
 
 
+class ServiceItemViewSet(viewsets.ModelViewSet):
+    queryset = ServiceItem.objects.prefetch_related("images").all()
+    serializer_class = ServiceItemSerializer
+
+    def get_object(self):
+        lookup = self.kwargs.get(self.lookup_url_kwarg or "pk")
+        qs = self.get_queryset()
+        if str(lookup).isdigit():
+            return get_object_or_404(qs, pk=lookup)
+        return get_object_or_404(qs, slug=lookup)
+
+    @action(detail=True, methods=["post"], url_path="gallery")
+    def add_gallery_images(self, request, pk=None):
+        service = self.get_object()
+        files = request.FILES.getlist("images")
+        if not files:
+            return Response({"detail": "No images provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        start_order = service.images.count()
+        for i, uploaded in enumerate(files):
+            ServiceImage.objects.create(service=service, image=uploaded, order=start_order + i)
+
+        if not service.image and service.images.exists():
+            service.image = service.images.first().image
+            service.save(update_fields=["image"])
+
+        return Response(ServiceItemSerializer(service, context={"request": request}).data)
+
+    @action(detail=True, methods=["delete"], url_path=r"gallery/(?P<image_id>[^/.]+)")
+    def remove_gallery_image(self, request, pk=None, image_id=None):
+        service = self.get_object()
+        image = get_object_or_404(ServiceImage, pk=image_id, service=service)
+        image.delete()
+
+        if service.images.exists():
+            service.image = service.images.first().image
+        else:
+            service.image = None
+        service.save(update_fields=["image"])
+
+        return Response(ServiceItemSerializer(service, context={"request": request}).data)
+
+
+class FeaturedVideoViewSet(viewsets.ModelViewSet):
+    queryset = FeaturedVideo.objects.all()
+    serializer_class = FeaturedVideoSerializer
+
+
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
@@ -144,6 +194,8 @@ def dashboard_stats(request):
         {
             "employees": Employee.objects.count(),
             "events": EventItem.objects.count(),
+            "services": ServiceItem.objects.count(),
+            "featured_videos": FeaturedVideo.objects.count(),
             "reviews": Review.objects.count(),
             "reviews_pending": Review.objects.filter(approved=False).count(),
             "pages": PageContent.objects.count(),

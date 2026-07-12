@@ -143,6 +143,99 @@ export const events: EventItem[] = [
   },
 ];
 
+export type ServiceItem = {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  longDescription: string;
+  availability: string;
+  quantity: string;
+  price: string;
+  highlights: string[];
+  image: string;
+  images: string[];
+};
+
+export const services: ServiceItem[] = [
+  {
+    id: "premium-petrol",
+    title: "Premium Petrol",
+    category: "Fuel",
+    description: "High-octane petrol for smoother drives and cleaner engines.",
+    longDescription:
+      "Our Premium Petrol is formulated for modern engines that demand higher octane. Every delivery is quality-checked on arrival so you get consistent performance, better mileage, and fewer deposits over time.",
+    availability: "Available 24/7",
+    quantity: "On-site tank capacity · continuous refill",
+    price: "Ask at pump / display board",
+    highlights: [
+      "Higher octane for turbo & premium cars",
+      "Quality tested on every tanker delivery",
+      "Dedicated high-flow dispensers",
+      "Digital & cash payments accepted",
+    ],
+    image: event1,
+    images: [event1, event2],
+  },
+  {
+    id: "diesel",
+    title: "Diesel",
+    category: "Fuel",
+    description: "Reliable diesel for cars, SUVs, and commercial fleets.",
+    longDescription:
+      "Clean, calibrated diesel for daily drivers and fleet operators. Our pumps are regularly audited so dispensed volume matches what you pay for.",
+    availability: "Available 24/7",
+    quantity: "High-volume underground storage",
+    price: "Ask at pump / display board",
+    highlights: [
+      "Fleet-friendly high-flow nozzles",
+      "Calibrated meters & transparent billing",
+      "Suitable for cars, SUVs & light commercial",
+      "Night-time service with full lighting",
+    ],
+    image: event2,
+    images: [event2, event3],
+  },
+  {
+    id: "ev-fast-charging",
+    title: "EV Fast Charging",
+    category: "EV & Charging",
+    description: "Ultra-fast DC charging bays while you grab a coffee.",
+    longDescription:
+      "Two dedicated EV charging bays with CCS connectors. Ideal for highway top-ups or a quick charge while you visit the lounge.",
+    availability: "Available · 2 bays",
+    quantity: "2 charging bays",
+    price: "Per kWh · see bay screen",
+    highlights: [
+      "CCS DC fast charging",
+      "Covered bay with lighting",
+      "Pay via UPI / card at bay",
+      "Staff assistance on request",
+    ],
+    image: event1,
+    images: [event1, event3],
+  },
+  {
+    id: "air-tyre-care",
+    title: "Air & Tyre Care",
+    category: "Forecourt Care",
+    description: "Free air check and pressure top-up for every visitor.",
+    longDescription:
+      "Maintain correct tyre pressure for safety and mileage. Our digital air points are free for customers — attendants can help set the PSI for your vehicle type.",
+    availability: "Available",
+    quantity: "2 air points",
+    price: "Complimentary",
+    highlights: [
+      "Digital PSI display",
+      "Free for station customers",
+      "Attendant help available",
+      "Open with station hours (24/7)",
+    ],
+    image: event3,
+    images: [event3, event2],
+  },
+];
+
 export const reviews = [
   { name: "Aanya Kapoor", rating: 5, text: "Cleanest station I've ever visited. The staff is incredibly friendly and the fuel quality is top-notch.", role: "Daily Commuter" },
   { name: "Vikram Bose", rating: 5, text: "Fast service, no queues even on weekends. Card payments and UPI work flawlessly. Highly recommended.", role: "Fleet Owner" },

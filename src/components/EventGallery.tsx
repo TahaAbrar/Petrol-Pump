@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { Reveal } from "@/components/Reveal";
 
-/** Editorial gallery layout for event detail pages. */
-export function EventGallery({ images, title }: { images: string[]; title: string }) {
+/** Editorial gallery layout for event/service detail pages. */
+export function EventGallery({
+  images,
+  title,
+  eyebrow = "Gallery",
+  heading = "Moments from the event",
+}: {
+  images: string[];
+  title: string;
+  eyebrow?: string;
+  heading?: string;
+}) {
   const [active, setActive] = useState(0);
   if (!images.length) return null;
 
@@ -10,8 +20,8 @@ export function EventGallery({ images, title }: { images: string[]; title: strin
     <section className="py-16 md:py-24">
       <div className="container-x">
         <Reveal>
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Gallery</span>
-          <h2 className="mt-3 text-3xl font-bold md:text-4xl">Moments from the event</h2>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</span>
+          <h2 className="mt-3 text-3xl font-bold md:text-4xl">{heading}</h2>
         </Reveal>
 
         <Reveal delay={0.05} className="mt-10">

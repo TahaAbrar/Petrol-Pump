@@ -4,6 +4,7 @@ import { Loader2, Plus, Pencil, Trash2, ImagePlus, CalendarDays, Video, X } from
 import { useState } from "react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { Switch } from "@/components/ui/switch";
 import { apiFetch, mediaUrl, type EventItem } from "@/lib/api";
 import { refreshPublicContent } from "@/lib/content";
 
@@ -44,6 +45,16 @@ function EventsPage() {
       toast.success("Event deleted");
     },
     onError: (e: any) => toast.error("Delete failed", { description: e?.message }),
+  });
+
+  const featureMutation = useMutation({
+    mutationFn: ({ id, featured }: { id: number; featured: boolean }) =>
+      apiFetch<EventItem>(`/events/${id}/`, { method: "PATCH", body: { featured } }),
+    onSuccess: (saved) => {
+      invalidate();
+      toast.success(saved.featured ? "Featured on home" : "Removed from home features");
+    },
+    onError: (e: any) => toast.error("Could not update feature", { description: e?.message }),
   });
 
   async function removeGalleryImage(eventId: number, imageId: number) {
@@ -293,19 +304,34 @@ function EventsPage() {
                 <div className="text-xs text-muted-foreground">{ev.date}</div>
                 <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{ev.description}</p>
               </div>
-              <div className="flex shrink-0 flex-col gap-1.5">
-                <IconBtn title="Edit" onClick={() => startEdit(ev)}>
-                  <Pencil className="h-4 w-4" />
-                </IconBtn>
-                <IconBtn
-                  title="Delete"
-                  danger
-                  onClick={() => {
-                    if (confirm(`Delete "${ev.title}"?`)) deleteMutation.mutate(ev.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </IconBtn>
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
+                <div className="mb-1 flex items-center gap-2 rounded-xl border border-border px-2.5 py-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Feature
+                  </span>
+                  <Switch
+                    checked={Boolean(ev.featured)}
+                    disabled={featureMutation.isPending}
+                    onCheckedChange={(checked) =>
+                      featureMutation.mutate({ id: ev.id, featured: checked })
+                    }
+                    aria-label={`Feature ${ev.title} on home`}
+                  />
+                </div>
+                <div className="flex gap-1.5">
+                  <IconBtn title="Edit" onClick={() => startEdit(ev)}>
+                    <Pencil className="h-4 w-4" />
+                  </IconBtn>
+                  <IconBtn
+                    title="Delete"
+                    danger
+                    onClick={() => {
+                      if (confirm(`Delete "${ev.title}"?`)) deleteMutation.mutate(ev.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </IconBtn>
+                </div>
               </div>
             </div>
           ))}

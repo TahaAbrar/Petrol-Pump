@@ -8,6 +8,8 @@ import heroImg from "@/assets/hero-station.jpg";
 import { Reveal } from "@/components/Reveal";
 import { ColoredText } from "@/components/ColoredText";
 import { OurStorySection } from "@/components/OurStorySection";
+import { FeaturedVideosSection } from "@/components/FeaturedVideosSection";
+import { FeaturedServicesSection, FeaturedEventsSection } from "@/components/HomeFeaturedSections";
 import { useSiteContent, useReviews, usePage, pageTextColors } from "@/lib/content";
 import { parseOurStory } from "@/lib/about-page-content";
 import { mediaUrl } from "@/lib/api";
@@ -47,7 +49,10 @@ function HomePage() {
   return (
     <div>
       <Hero />
+      <FeaturedVideosSection />
       <About />
+      <FeaturedServicesSection />
+      <FeaturedEventsSection />
       <Features />
       <Reviews />
       <WhyAndMap />

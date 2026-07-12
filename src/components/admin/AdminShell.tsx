@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, Settings, FileText, Users, CalendarDays, Star, LogOut, Menu, X, Loader2, UserCircle,
+  LayoutDashboard, Settings, FileText, Users, CalendarDays, Star, LogOut, Menu, X, Loader2, UserCircle, Fuel, Video,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -14,7 +14,9 @@ const NAV = [
   { to: "/admin/site", label: "Site Info", icon: Settings },
   { to: "/admin/pages", label: "Pages & Banners", icon: FileText },
   { to: "/admin/employees", label: "Employees", icon: Users },
+  { to: "/admin/services", label: "Services", icon: Fuel },
   { to: "/admin/events", label: "Events", icon: CalendarDays },
+  { to: "/admin/videos", label: "Featured Videos", icon: Video },
   { to: "/admin/reviews", label: "Reviews", icon: Star },
   { to: "/admin/account", label: "Account", icon: UserCircle },
 ] as const;

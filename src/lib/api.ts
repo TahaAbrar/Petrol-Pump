@@ -118,6 +118,8 @@ export type PageContent = {
   banner: string | null;
   story_image: string | null;
   founder_image: string | null;
+  ceo2_image: string | null;
+  manager_image: string | null;
   extra: Record<string, any>;
   updated_at: string;
 };
@@ -152,8 +154,41 @@ export type EventItem = {
   image: string | null;
   video: string | null;
   images: EventImageItem[];
+  featured: boolean;
   order: number;
   text_colors?: Record<string, string>;
+};
+
+export type ServiceImageItem = {
+  id: number;
+  image: string | null;
+  order: number;
+};
+
+export type ServiceItem = {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  description: string;
+  long_description: string;
+  availability: string;
+  quantity: string;
+  price: string;
+  highlights: string[];
+  image: string | null;
+  images: ServiceImageItem[];
+  featured: boolean;
+  order: number;
+  text_colors?: Record<string, string>;
+};
+
+export type FeaturedVideo = {
+  id: number;
+  title: string;
+  video: string | null;
+  order: number;
+  created_at: string;
 };
 
 export type Review = {
@@ -178,6 +213,8 @@ export type AdminUser = {
 export type DashboardStats = {
   employees: number;
   events: number;
+  services: number;
+  featured_videos: number;
   reviews: number;
   reviews_pending: number;
   pages: number;

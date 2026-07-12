@@ -1,7 +1,17 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from .models import SiteSettings, PageContent, Employee, EventItem, EventImage, Review
+from .models import (
+    SiteSettings,
+    PageContent,
+    Employee,
+    EventItem,
+    EventImage,
+    Review,
+    ServiceItem,
+    ServiceImage,
+    FeaturedVideo,
+)
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
@@ -14,12 +24,15 @@ class PageContentSerializer(serializers.ModelSerializer):
     banner = serializers.ImageField(required=False, allow_null=True)
     story_image = serializers.ImageField(required=False, allow_null=True)
     founder_image = serializers.ImageField(required=False, allow_null=True)
+    ceo2_image = serializers.ImageField(required=False, allow_null=True)
+    manager_image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = PageContent
         fields = [
             "id", "key", "title", "subtitle", "body", "banner",
-            "story_image", "founder_image", "extra", "updated_at",
+            "story_image", "founder_image", "ceo2_image", "manager_image",
+            "extra", "updated_at",
         ]
         read_only_fields = ["updated_at"]
 
@@ -53,9 +66,40 @@ class EventItemSerializer(serializers.ModelSerializer):
         model = EventItem
         fields = [
             "id", "title", "slug", "description", "long_description",
-            "date", "image", "video", "images", "order", "text_colors", "created_at",
+            "date", "image", "video", "images", "featured", "order", "text_colors", "created_at",
         ]
         read_only_fields = ["slug", "created_at"]
+
+
+class ServiceImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = ServiceImage
+        fields = ["id", "image", "order"]
+
+
+class ServiceItemSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, allow_null=True)
+    images = ServiceImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ServiceItem
+        fields = [
+            "id", "title", "slug", "category", "description", "long_description",
+            "availability", "quantity", "price", "highlights",
+            "image", "images", "featured", "order", "text_colors", "created_at",
+        ]
+        read_only_fields = ["slug", "created_at"]
+
+
+class FeaturedVideoSerializer(serializers.ModelSerializer):
+    video = serializers.FileField(required=False, allow_null=True)
+
+    class Meta:
+        model = FeaturedVideo
+        fields = ["id", "title", "video", "order", "created_at"]
+        read_only_fields = ["created_at"]
 
 
 class ChangeCredentialsSerializer(serializers.Serializer):

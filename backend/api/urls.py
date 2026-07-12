@@ -7,6 +7,8 @@ router = DefaultRouter()
 router.register(r"pages", views.PageContentViewSet, basename="pages")
 router.register(r"employees", views.EmployeeViewSet, basename="employees")
 router.register(r"events", views.EventItemViewSet, basename="events")
+router.register(r"services", views.ServiceItemViewSet, basename="services")
+router.register(r"featured-videos", views.FeaturedVideoViewSet, basename="featured-videos")
 router.register(r"reviews", views.ReviewViewSet, basename="reviews")
 
 site_settings = views.SiteSettingsViewSet.as_view(

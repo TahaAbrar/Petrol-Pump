@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";
 import orbImg from "@/assets/total-orb.png";
-import wordmarkImg from "@/assets/total-wordmark.png";
 
 const STORAGE_KEY = "total_splash_seen";
 const DURATION = 3400;
@@ -153,7 +152,7 @@ export function SplashScreen() {
               {/* Orb: spins in from depth and locks into place */}
               <motion.img
                 src={orbImg}
-                alt="Total"
+                alt=""
                 draggable={false}
                 className="h-20 w-auto md:h-28"
                 initial={{ opacity: 0, scale: 2.6, rotate: -210 }}
@@ -166,15 +165,15 @@ export function SplashScreen() {
               />
 
               {/* Wordmark: wipes out from behind the orb */}
-              <motion.img
-                src={wordmarkImg}
-                alt="TOTAL"
-                draggable={false}
-                className="h-11 w-auto md:h-16"
+              <motion.span
+                aria-label="Sukka PR"
+                className="select-none font-display text-4xl font-bold leading-none tracking-tight text-brand-red md:text-6xl"
                 initial={{ opacity: 0, x: -24, clipPath: "inset(0 100% 0 0)" }}
                 animate={{ opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)" }}
                 transition={{ duration: 0.7, delay: 1.0, ease: EASE_OUT }}
-              />
+              >
+                Sukka PR
+              </motion.span>
 
               {/* Shine sweep across the assembled lockup */}
               <motion.div

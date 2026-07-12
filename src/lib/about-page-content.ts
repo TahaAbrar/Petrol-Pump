@@ -9,12 +9,17 @@ export type OurStoryContent = {
 
 export type LeadershipStat = { v: string; l: string };
 
+export type LeadershipPerson = {
+  name: string;
+  role: string;
+  quote: string;
+};
+
 export type LeadershipContent = {
   eyebrow: string;
   title: string;
-  quote: string;
-  founderName: string;
-  founderRole: string;
+  /** Fixed order: CEO 1, CEO 2, Manager */
+  people: LeadershipPerson[];
   stats: LeadershipStat[];
 };
 
@@ -28,13 +33,31 @@ export const DEFAULT_OUR_STORY: OurStoryContent = {
   services: "Petrol, Diesel, Premium fuels, EV charging, Air & lounge.",
 };
 
+export const DEFAULT_LEADERSHIP_PEOPLE: LeadershipPerson[] = [
+  {
+    name: "Mr. Anil Verma",
+    role: "CEO",
+    quote:
+      "We're not just selling fuel — we're selling time, trust and the confidence that your vehicle is in safe hands.",
+  },
+  {
+    name: "Ms. Priya Sharma",
+    role: "CEO",
+    quote:
+      "Growth means nothing without integrity. We build every partnership and every litre of fuel on that foundation.",
+  },
+  {
+    name: "Mr. Rohit Khan",
+    role: "Manager",
+    quote:
+      "My job is to make every shift seamless — safe pumps, clean forecourt, and a team that greets every customer like family.",
+  },
+];
+
 export const DEFAULT_LEADERSHIP: LeadershipContent = {
   eyebrow: "Leadership",
-  title: "A message from our founder.",
-  quote:
-    "We're not just selling fuel — we're selling time, trust and the confidence that your vehicle is in safe hands. Every team member, every pump, every detail at this station exists to honour that promise.",
-  founderName: "Mr. Anil Verma",
-  founderRole: "Founder & Managing Director",
+  title: "The people steering our station.",
+  people: DEFAULT_LEADERSHIP_PEOPLE.map((p) => ({ ...p })),
   stats: [
     { v: "30+", l: "Years experience" },
     { v: "5", l: "Awards won" },
@@ -48,6 +71,16 @@ function pickString(obj: unknown, key: string, fallback: string): string {
     if (typeof v === "string" && v.trim()) return v;
   }
   return fallback;
+}
+
+function parsePerson(raw: unknown, fallback: LeadershipPerson): LeadershipPerson {
+  if (!raw || typeof raw !== "object") return { ...fallback };
+  const src = raw as Record<string, unknown>;
+  return {
+    name: pickString(src, "name", fallback.name),
+    role: pickString(src, "role", fallback.role),
+    quote: pickString(src, "quote", fallback.quote),
+  };
 }
 
 export function parseOurStory(extra?: Record<string, unknown>): OurStoryContent {
@@ -78,12 +111,26 @@ export function parseLeadership(extra?: Record<string, unknown>): LeadershipCont
         })
       : DEFAULT_LEADERSHIP.stats.map((s) => ({ ...s }));
 
+  const peopleRaw = src.people;
+  let people: LeadershipPerson[];
+  if (Array.isArray(peopleRaw) && peopleRaw.length > 0) {
+    people = DEFAULT_LEADERSHIP_PEOPLE.map((fallback, i) => parsePerson(peopleRaw[i], fallback));
+  } else {
+    // Legacy single-founder shape → map into CEO 1, keep defaults for CEO 2 + Manager
+    const legacyName = pickString(src, "founderName", DEFAULT_LEADERSHIP_PEOPLE[0].name);
+    const legacyRole = pickString(src, "founderRole", DEFAULT_LEADERSHIP_PEOPLE[0].role);
+    const legacyQuote = pickString(src, "quote", DEFAULT_LEADERSHIP_PEOPLE[0].quote);
+    people = [
+      { name: legacyName, role: legacyRole, quote: legacyQuote },
+      { ...DEFAULT_LEADERSHIP_PEOPLE[1] },
+      { ...DEFAULT_LEADERSHIP_PEOPLE[2] },
+    ];
+  }
+
   return {
     eyebrow: pickString(src, "eyebrow", DEFAULT_LEADERSHIP.eyebrow),
     title: pickString(src, "title", DEFAULT_LEADERSHIP.title),
-    quote: pickString(src, "quote", DEFAULT_LEADERSHIP.quote),
-    founderName: pickString(src, "founderName", DEFAULT_LEADERSHIP.founderName),
-    founderRole: pickString(src, "founderRole", DEFAULT_LEADERSHIP.founderRole),
+    people,
     stats,
   };
 }

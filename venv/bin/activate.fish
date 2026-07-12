@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/taha-abrar/Downloads/Petrol-pump/venv
+set -gx VIRTUAL_ENV /home/taha-abrar/Downloads/Petrol-pump/Petrol-Pump/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

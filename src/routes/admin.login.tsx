@@ -67,14 +67,17 @@ function AdminLogin() {
       >
         <div className="rounded-3xl border border-brand-red/35 bg-background p-8 shadow-elegant">
           <div className="mb-7 flex flex-col items-center text-center">
-            <motion.img
-              src={orbImg}
-              alt="Total"
-              className="h-16 w-auto"
+            <motion.div
+              className="flex items-center gap-2"
               initial={{ rotate: -120, scale: 0.6, opacity: 0 }}
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            />
+            >
+              <img src={orbImg} alt="" className="h-16 w-auto" draggable={false} />
+              <span className="font-display text-2xl font-bold leading-none tracking-tight text-brand-red">
+                Sukka PR
+              </span>
+            </motion.div>
             <h1 className="mt-4 text-2xl font-bold text-foreground">Admin Panel</h1>
             <p className="mt-1 text-sm text-muted-foreground">Sign in to manage Total Fuel Station</p>
           </div>

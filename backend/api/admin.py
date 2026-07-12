@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SiteSettings, PageContent, Employee, EventItem, Review
+from .models import SiteSettings, PageContent, Employee, EventItem, Review, ServiceItem, FeaturedVideo
 
 
 @admin.register(SiteSettings)
@@ -22,9 +22,22 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(EventItem)
 class EventItemAdmin(admin.ModelAdmin):
-    list_display = ["title", "date", "order"]
-    list_editable = ["order"]
+    list_display = ["title", "date", "featured", "order"]
+    list_editable = ["featured", "order"]
     prepopulated_fields = {"slug": ("title",)}
+
+
+@admin.register(ServiceItem)
+class ServiceItemAdmin(admin.ModelAdmin):
+    list_display = ["title", "category", "availability", "featured", "order"]
+    list_editable = ["featured", "order"]
+    prepopulated_fields = {"slug": ("title",)}
+
+
+@admin.register(FeaturedVideo)
+class FeaturedVideoAdmin(admin.ModelAdmin):
+    list_display = ["title", "order", "created_at"]
+    list_editable = ["order"]
 
 
 @admin.register(Review)

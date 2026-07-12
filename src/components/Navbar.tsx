@@ -8,6 +8,7 @@ import { useSiteContent } from "@/lib/content";
 const nav = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About Us" },
+  { to: "/services", label: "Services" },
   { to: "/events", label: "Events" },
 ] as const;
 

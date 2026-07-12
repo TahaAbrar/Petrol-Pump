@@ -12,7 +12,16 @@ from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.core.management.base import BaseCommand
 
-from api.models import SiteSettings, PageContent, Employee, EventItem, EventImage, Review
+from api.models import (
+    SiteSettings,
+    PageContent,
+    Employee,
+    EventItem,
+    EventImage,
+    Review,
+    ServiceItem,
+    ServiceImage,
+)
 
 ASSETS = settings.BASE_DIR.parent / "src" / "assets"
 
@@ -41,6 +50,7 @@ class Command(BaseCommand):
         self.seed_pages()
         self.seed_employees()
         self.seed_events()
+        self.seed_services()
         self.seed_reviews()
         self.stdout.write(self.style.SUCCESS("\nSeed complete."))
         self.stdout.write(
@@ -105,6 +115,8 @@ class Command(BaseCommand):
                 "banner": "about-banner.jpg",
                 "story_image": "about-fueling.jpg",
                 "founder_image": "owner.jpg",
+                "ceo2_image": "emp-2.jpg",
+                "manager_image": "emp-1.jpg",
                 "extra": {
                     "ourStory": {
                         "eyebrow": "Our story",
@@ -121,14 +133,33 @@ class Command(BaseCommand):
                     },
                     "leadership": {
                         "eyebrow": "Leadership",
-                        "title": "A message from our founder.",
-                        "quote": (
-                            "We're not just selling fuel — we're selling time, trust and the confidence "
-                            "that your vehicle is in safe hands. Every team member, every pump, every "
-                            "detail at this station exists to honour that promise."
-                        ),
-                        "founderName": "Mr. Anil Verma",
-                        "founderRole": "Founder & Managing Director",
+                        "title": "The people steering our station.",
+                        "people": [
+                            {
+                                "name": "Mr. Anil Verma",
+                                "role": "CEO",
+                                "quote": (
+                                    "We're not just selling fuel — we're selling time, trust and the confidence "
+                                    "that your vehicle is in safe hands."
+                                ),
+                            },
+                            {
+                                "name": "Ms. Priya Sharma",
+                                "role": "CEO",
+                                "quote": (
+                                    "Growth means nothing without integrity. We build every partnership "
+                                    "and every litre of fuel on that foundation."
+                                ),
+                            },
+                            {
+                                "name": "Mr. Rohit Khan",
+                                "role": "Manager",
+                                "quote": (
+                                    "My job is to make every shift seamless — safe pumps, clean forecourt, "
+                                    "and a team that greets every customer like family."
+                                ),
+                            },
+                        ],
                         "stats": [
                             {"v": "30+", "l": "Years experience"},
                             {"v": "5", "l": "Awards won"},
@@ -145,17 +176,31 @@ class Command(BaseCommand):
                 "banner": "events-banner.jpg",
                 "extra": {},
             },
+            {
+                "key": "services",
+                "title": "Everything your vehicle needs, under one canopy.",
+                "subtitle": "Services",
+                "body": "From premium fuels to EV charging, air, and convenience — see what is available at our station, with live stock and clear details.",
+                "banner": "hero-station.jpg",
+                "extra": {},
+            },
         ]
         for data in pages:
             banner = data.pop("banner")
             story_image = data.pop("story_image", None)
             founder_image = data.pop("founder_image", None)
+            ceo2_image = data.pop("ceo2_image", None)
+            manager_image = data.pop("manager_image", None)
             obj, _ = PageContent.objects.update_or_create(key=data["key"], defaults=data)
             attach_image(obj, "banner", banner)
             if story_image:
                 attach_image(obj, "story_image", story_image)
             if founder_image:
                 attach_image(obj, "founder_image", founder_image)
+            if ceo2_image:
+                attach_image(obj, "ceo2_image", ceo2_image)
+            if manager_image:
+                attach_image(obj, "manager_image", manager_image)
         self.stdout.write("Seeded pages")
 
     def seed_employees(self):
@@ -231,6 +276,116 @@ class Command(BaseCommand):
             if obj.image and not obj.images.exists():
                 EventImage.objects.create(event=obj, image=obj.image, order=0)
         self.stdout.write("Seeded events")
+
+    def seed_services(self):
+        data = [
+            {
+                "slug": "premium-petrol",
+                "title": "Premium Petrol",
+                "category": "Fuel",
+                "img": "hero-station.jpg",
+                "gallery": ["hero-station.jpg", "about-fueling.jpg"],
+                "description": "High-octane petrol for smoother drives and cleaner engines.",
+                "long_description": (
+                    "Our Premium Petrol is formulated for modern engines that demand higher octane. "
+                    "Every delivery is quality-checked on arrival so you get consistent performance, "
+                    "better mileage, and fewer deposits over time. Available 24/7 at dedicated high-flow pumps."
+                ),
+                "availability": "Available 24/7",
+                "quantity": "On-site tank capacity · continuous refill",
+                "price": "Ask at pump / display board",
+                "highlights": [
+                    "Higher octane for turbo & premium cars",
+                    "Quality tested on every tanker delivery",
+                    "Dedicated high-flow dispensers",
+                    "Digital & cash payments accepted",
+                ],
+            },
+            {
+                "slug": "diesel",
+                "title": "Diesel",
+                "category": "Fuel",
+                "img": "about-fueling.jpg",
+                "gallery": ["about-fueling.jpg", "event-1.jpg"],
+                "description": "Reliable diesel for cars, SUVs, and commercial fleets.",
+                "long_description": (
+                    "Clean, calibrated diesel for daily drivers and fleet operators. Our pumps are "
+                    "regularly audited so dispensed volume matches what you pay for — trusted by "
+                    "local taxis, logistics vans, and highway traffic alike."
+                ),
+                "availability": "Available 24/7",
+                "quantity": "High-volume underground storage",
+                "price": "Ask at pump / display board",
+                "highlights": [
+                    "Fleet-friendly high-flow nozzles",
+                    "Calibrated meters & transparent billing",
+                    "Suitable for cars, SUVs & light commercial",
+                    "Night-time service with full lighting",
+                ],
+            },
+            {
+                "slug": "ev-fast-charging",
+                "title": "EV Fast Charging",
+                "category": "EV & Charging",
+                "img": "event-1.jpg",
+                "gallery": ["event-1.jpg", "hero-station.jpg"],
+                "description": "Ultra-fast DC charging bays while you grab a coffee.",
+                "long_description": (
+                    "Two dedicated EV charging bays with CCS connectors. Ideal for highway top-ups "
+                    "or a quick charge while you visit the lounge. Bay status is monitored by staff "
+                    "so you are never left waiting without help."
+                ),
+                "availability": "Available · 2 bays",
+                "quantity": "2 charging bays",
+                "price": "Per kWh · see bay screen",
+                "highlights": [
+                    "CCS DC fast charging",
+                    "Covered bay with lighting",
+                    "Pay via UPI / card at bay",
+                    "Staff assistance on request",
+                ],
+            },
+            {
+                "slug": "air-tyre-care",
+                "title": "Air & Tyre Care",
+                "category": "Forecourt Care",
+                "img": "event-3.jpg",
+                "gallery": ["event-3.jpg", "about-fueling.jpg"],
+                "description": "Free air check and pressure top-up for every visitor.",
+                "long_description": (
+                    "Maintain correct tyre pressure for safety and mileage. Our digital air points "
+                    "are free for customers — attendants can help set the PSI for your vehicle type."
+                ),
+                "availability": "Available",
+                "quantity": "2 air points",
+                "price": "Complimentary",
+                "highlights": [
+                    "Digital PSI display",
+                    "Free for station customers",
+                    "Attendant help available",
+                    "Open with station hours (24/7)",
+                ],
+            },
+        ]
+        for i, d in enumerate(data):
+            img = d.pop("img")
+            gallery = d.pop("gallery", [])
+            slug = d.pop("slug")
+            obj, _ = ServiceItem.objects.update_or_create(
+                slug=slug, defaults={**d, "order": i}
+            )
+            attach_image(obj, "image", img)
+            if not obj.images.exists():
+                for gi, gname in enumerate(gallery):
+                    path = ASSETS / gname
+                    if not path.exists():
+                        continue
+                    si = ServiceImage(service=obj, order=gi)
+                    with path.open("rb") as fh:
+                        si.image.save(gname, File(fh), save=True)
+                if obj.image and not obj.images.exists():
+                    ServiceImage.objects.create(service=obj, image=obj.image, order=0)
+        self.stdout.write("Seeded services")
 
     def seed_reviews(self):
         data = [

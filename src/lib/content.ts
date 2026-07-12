@@ -7,6 +7,8 @@ import {
   type SiteSettings as ApiSite,
   type Employee as ApiEmployee,
   type EventItem as ApiEvent,
+  type ServiceItem as ApiService,
+  type FeaturedVideo as ApiFeaturedVideo,
   type Review as ApiReview,
   type PageContent,
 } from "./api";
@@ -14,6 +16,7 @@ import {
   SITE as STATIC_SITE,
   employees as STATIC_EMPLOYEES,
   events as STATIC_EVENTS,
+  services as STATIC_SERVICES,
   reviews as STATIC_REVIEWS,
 } from "./site-data";
 import { parseTextColors, type TextColors } from "./text-colors";
@@ -21,7 +24,9 @@ import { parseTextColors, type TextColors } from "./text-colors";
 export type UiSite = typeof STATIC_SITE & { textColors: TextColors };
 export type UiReview = (typeof STATIC_REVIEWS)[number] & { textColors: TextColors };
 export type UiEmployee = typeof STATIC_EMPLOYEES[number] & { textColors: TextColors };
-export type UiEvent = typeof STATIC_EVENTS[number] & { textColors: TextColors };
+export type UiEvent = typeof STATIC_EVENTS[number] & { textColors: TextColors; featured: boolean };
+export type UiService = typeof STATIC_SERVICES[number] & { textColors: TextColors; featured: boolean };
+export type UiFeaturedVideo = { id: number; title: string; videoUrl: string; order: number };
 
 /** Public content query keys — keep in sync with admin invalidation helpers. */
 export const publicContentKeys = {
@@ -29,8 +34,11 @@ export const publicContentKeys = {
   reviews: ["reviews"] as const,
   employees: ["employees"] as const,
   events: ["events"] as const,
+  services: ["services"] as const,
+  featuredVideos: ["featured-videos"] as const,
   page: (key: string) => ["page", key] as const,
   event: (slug: string) => ["event", slug] as const,
+  service: (slug: string) => ["service", slug] as const,
   allPages: ["page"] as const,
 };
 
@@ -93,7 +101,34 @@ function mapEvent(e: ApiEvent): UiEvent {
     image: cover,
     images,
     videoUrl: mediaUrl(e.video) || "",
+    featured: Boolean(e.featured),
     textColors: parseTextColors(e.text_colors),
+  };
+}
+
+function mapService(s: ApiService): UiService {
+  const gallery = (s.images ?? [])
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((img) => mediaUrl(img.image))
+    .filter(Boolean);
+  const cover = mediaUrl(s.image) || gallery[0] || "";
+  const images = gallery.length ? gallery : cover ? [cover] : [];
+
+  return {
+    id: s.slug,
+    title: s.title,
+    category: s.category || "General",
+    description: s.description,
+    longDescription: s.long_description,
+    availability: s.availability || "Available",
+    quantity: s.quantity || "",
+    price: s.price || "",
+    highlights: Array.isArray(s.highlights) ? s.highlights.map(String) : [],
+    image: cover,
+    images,
+    featured: Boolean(s.featured),
+    textColors: parseTextColors(s.text_colors),
   };
 }
 
@@ -118,6 +153,9 @@ export async function refreshPublicContent(
     qc.invalidateQueries({ queryKey: publicContentKeys.employees, refetchType: "all" }),
     qc.invalidateQueries({ queryKey: publicContentKeys.events, refetchType: "all" }),
     qc.invalidateQueries({ queryKey: ["event"], refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: publicContentKeys.services, refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: ["service"], refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: publicContentKeys.featuredVideos, refetchType: "all" }),
   ];
 
   if (opts?.pageKey) {
@@ -184,16 +222,16 @@ export function useEvents() {
       const data = await apiFetch<ApiEvent[]>("/events/", { auth: false });
       return data.map(mapEvent);
     },
-    placeholderData: STATIC_EVENTS.map((e) => ({ ...e, textColors: {} })),
+    placeholderData: STATIC_EVENTS.map((e) => ({ ...e, featured: false, textColors: {} })),
     ...publicQueryDefaults,
   });
-  return { ...query, data: query.data ?? STATIC_EVENTS.map((e) => ({ ...e, textColors: {} })) };
+  return { ...query, data: query.data ?? STATIC_EVENTS.map((e) => ({ ...e, featured: false, textColors: {} })) };
 }
 
 export function useEvent(slug: string) {
   const fallback = STATIC_EVENTS.find((e) => e.id === slug);
   const fallbackUi: UiEvent | undefined = fallback
-    ? { ...fallback, textColors: {} }
+    ? { ...fallback, featured: false, textColors: {} }
     : undefined;
 
   const query = useQuery<UiEvent>({
@@ -205,6 +243,58 @@ export function useEvent(slug: string) {
   });
 
   return { ...query, data: query.data ?? fallbackUi };
+}
+
+export function useServices() {
+  const query = useQuery<UiService[]>({
+    queryKey: publicContentKeys.services,
+    queryFn: async () => {
+      const data = await apiFetch<ApiService[]>("/services/", { auth: false });
+      return data.map(mapService);
+    },
+    placeholderData: STATIC_SERVICES.map((s) => ({ ...s, featured: false, textColors: {} })),
+    ...publicQueryDefaults,
+  });
+  return { ...query, data: query.data ?? STATIC_SERVICES.map((s) => ({ ...s, featured: false, textColors: {} })) };
+}
+
+export function useService(slug: string) {
+  const fallback = STATIC_SERVICES.find((s) => s.id === slug);
+  const fallbackUi: UiService | undefined = fallback
+    ? { ...fallback, featured: false, textColors: {} }
+    : undefined;
+
+  const query = useQuery<UiService>({
+    queryKey: publicContentKeys.service(slug),
+    queryFn: async () => mapService(await apiFetch<ApiService>(`/services/${slug}/`, { auth: false })),
+    placeholderData: fallbackUi,
+    enabled: Boolean(slug),
+    ...publicQueryDefaults,
+  });
+
+  return { ...query, data: query.data ?? fallbackUi };
+}
+
+export function useFeaturedVideos() {
+  const query = useQuery<UiFeaturedVideo[]>({
+    queryKey: publicContentKeys.featuredVideos,
+    queryFn: async () => {
+      const data = await apiFetch<ApiFeaturedVideo[]>("/featured-videos/", { auth: false });
+      return data
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .map((v) => ({
+          id: v.id,
+          title: v.title || "",
+          videoUrl: mediaUrl(v.video) || "",
+          order: v.order,
+        }))
+        .filter((v) => v.videoUrl);
+    },
+    placeholderData: [],
+    ...publicQueryDefaults,
+  });
+  return { ...query, data: query.data ?? [] };
 }
 
 export function pageTextColors(page?: { extra?: Record<string, unknown> } | null): TextColors {

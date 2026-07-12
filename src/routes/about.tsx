@@ -76,9 +76,13 @@ function Overview() {
 function Owner() {
   const { data: page } = usePage("about");
   const leadership = parseLeadership(page?.extra);
-  const founderImage = page?.founder_image ? mediaUrl(page.founder_image) : undefined;
+  const imageSrcs = [
+    page?.founder_image ? mediaUrl(page.founder_image) : undefined,
+    page?.ceo2_image ? mediaUrl(page.ceo2_image) : undefined,
+    page?.manager_image ? mediaUrl(page.manager_image) : undefined,
+  ];
   const colors = pageTextColors(page);
-  return <LeadershipSection leadership={leadership} imageSrc={founderImage} colors={colors} />;
+  return <LeadershipSection leadership={leadership} imageSrcs={imageSrcs} colors={colors} />;
 }
 
 function Team() {

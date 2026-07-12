@@ -30,28 +30,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-venv
 
+# Python virtualenv — never commit
 venv/
-venv/bin/
-venv/include/
-venv/lib/
-venv/lib64/
-venv/lib/python3.12/
-venv/lib/python3.12/site-packages/
-venv/lib/python3.12/site-packages/pip-24.0.1-py3.12.egg/
-venv/lib/python3.12/site-packages/pip-24.0.1-py3.12.egg/EGG-INFO/
-venv/lib/python3.12/site-packages/pip-24.0.1-py3.12.egg/EGG-INFO/PKG-INFO
+.venv/
+env/
 
+# Env / secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.development
-.env.test
-.env.production
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+
+# Backend runtime (also in backend/.gitignore)
+**/__pycache__/
+*.py[cod]
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/

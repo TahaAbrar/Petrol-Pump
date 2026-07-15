@@ -41,16 +41,18 @@ def _csv(key, default=""):
 
 
 # ---------------------------------------------------------------------------
-# Render sets RENDER=true. Prefer production defaults there.
+# Render / Koyeb set platform env. Prefer production defaults there.
 ON_RENDER = env_bool("RENDER", False) or bool(env("RENDER_EXTERNAL_HOSTNAME"))
+ON_KOYEB = bool(env("KOYEB_APP_NAME") or env("KOYEB_PUBLIC_DOMAIN"))
+ON_PAAS = ON_RENDER or ON_KOYEB
 
 SECRET_KEY = env(
     "SECRET_KEY",
     "django-insecure-)1$d%d6pgwm*3f1@skk6uw!s*2f3vysgn5%cz6t1+9v^@e+66u",
 )
 
-# Local default True; on Render default False (override only if you set DEBUG=True).
-if ON_RENDER:
+# Local default True; on PaaS default False.
+if ON_PAAS:
     DEBUG = env_bool("DEBUG", False)
 else:
     DEBUG = env_bool("DEBUG", True)
@@ -62,10 +64,15 @@ if _render_host and _render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_render_host)
 if ON_RENDER and ".onrender.com" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(".onrender.com")
+_koyeb_domain = env("KOYEB_PUBLIC_DOMAIN")
+if _koyeb_domain and _koyeb_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_koyeb_domain)
+if ON_KOYEB and ".koyeb.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".koyeb.app")
 
-if ON_RENDER and SECRET_KEY.startswith("django-insecure"):
+if ON_PAAS and SECRET_KEY.startswith("django-insecure"):
     raise RuntimeError(
-        "Set a strong SECRET_KEY env var on Render (do not use the insecure local default)."
+        "Set a strong SECRET_KEY env var on the host (do not use the insecure local default)."
     )
 
 
@@ -238,7 +245,7 @@ CORS_ALLOWED_ORIGINS = _csv(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000",
 )
-CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG and not ON_RENDER)
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG and not ON_PAAS)
 CORS_ALLOW_CREDENTIALS = True
 
 # Logging to stdout so Render dashboard shows errors

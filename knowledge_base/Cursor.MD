@@ -162,4 +162,5 @@ Env must change for production (dashboard only — not hardcode domain in `.py`)
 **Full start→end human checklist:** `knowledge_base/DEPLOY.md`
 
 ### Agent note
-Guide user through DEPLOY.md; do not buy paid VPS. Stack = Neon + Render + Cloudflare Pages + domain DNS.
+Guide user through DEPLOY.md; do not buy paid VPS. Stack = Neon + Render/Koyeb + Cloudflare Pages + domain DNS.
+If Render asks for card on Free: prefer finishing Render with Free+$0 verify **or** switch to **Koyeb** (best free Django alternative that works with Neon; PythonAnywhere free cannot reach Neon Postgres).

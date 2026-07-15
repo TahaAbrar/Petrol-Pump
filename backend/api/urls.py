@@ -16,6 +16,7 @@ site_settings = views.SiteSettingsViewSet.as_view(
 )
 
 urlpatterns = [
+    path("health/", views.health, name="health"),
     path("auth/login/", views.LoginView.as_view(), name="login"),
     path("auth/logout/", views.LogoutView.as_view(), name="logout"),
     path("auth/me/", views.me, name="me"),

@@ -1,0 +1,55 @@
+# Render Blueprint — BACKEND ONLY (same monorepo is OK).
+#
+# On Render Web Service set Root Directory = backend (this file sets rootDir).
+# Do NOT deploy frontend from this service. Frontend → Cloudflare Pages, same GitHub repo, root /.
+#
+# Database: Neon.tech — paste DATABASE_URL (recommended) OR discrete POSTGRES_* vars.
+
+services:
+  - type: web
+    name: petrol-pump-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: chmod +x ./build.sh && ./build.sh
+    # Free tier has no preDeployCommand — migrate on boot (safe / idempotent)
+    startCommand: python manage.py migrate --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /api/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: DEBUG
+        value: "False"
+      - key: USE_SQLITE
+        value: "0"
+      - key: SERVE_MEDIA
+        value: "True"
+      - key: SECRET_KEY
+        generateValue: true
+      # Prefer one Neon connection string (includes SSL):
+      - key: DATABASE_URL
+        sync: false
+      # Only needed if you skip DATABASE_URL and use separate fields:
+      - key: POSTGRES_DB
+        sync: false
+      - key: POSTGRES_USER
+        sync: false
+      - key: POSTGRES_PASSWORD
+        sync: false
+      - key: POSTGRES_HOST
+        sync: false
+      - key: POSTGRES_PORT
+        value: "5432"
+      # Domain / CORS — fill after you have frontend URL (pages.dev OR real domain)
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false

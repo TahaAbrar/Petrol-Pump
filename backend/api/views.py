@@ -22,6 +22,13 @@ from .serializers import (
 
 
 # --- Auth ------------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def health(request):
+    """Cheap liveness probe for Render / UptimeRobot (no DB required)."""
+    return Response({"status": "ok"})
+
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 

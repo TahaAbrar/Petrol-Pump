@@ -1,3 +1,4 @@
+import { Mail, Phone } from "lucide-react";
 import ownerImg from "@/assets/owner.jpg";
 import emp2 from "@/assets/emp-2.jpg";
 import emp1 from "@/assets/emp-1.jpg";
@@ -82,6 +83,28 @@ export function LeadershipSection({
                     >
                       &ldquo;{person.quote}&rdquo;
                     </ColoredText>
+                    {(person.phone || person.email) && (
+                      <div className="mt-4 space-y-2 border-t border-border pt-4">
+                        {person.phone ? (
+                          <a
+                            href={`tel:${person.phone.replace(/\s+/g, "")}`}
+                            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                          >
+                            <Phone className="h-3.5 w-3.5 shrink-0 text-primary" />
+                            <span>{person.phone}</span>
+                          </a>
+                        ) : null}
+                        {person.email ? (
+                          <a
+                            href={`mailto:${person.email}`}
+                            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                          >
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-primary" />
+                            <span className="truncate">{person.email}</span>
+                          </a>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 </article>
               </Reveal>

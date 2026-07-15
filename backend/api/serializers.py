@@ -15,6 +15,8 @@ from .models import (
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
+    logo = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = SiteSettings
         exclude = ["id"]

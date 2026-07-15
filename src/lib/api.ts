@@ -106,6 +106,7 @@ export type SiteSettings = {
   facebook: string;
   twitter: string;
   linkedin: string;
+  logo: string | null;
   text_colors?: Record<string, string>;
 };
 

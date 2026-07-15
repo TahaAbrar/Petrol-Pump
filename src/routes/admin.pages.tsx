@@ -17,6 +17,13 @@ import {
   type LeadershipStat,
   type OurStoryContent,
 } from "@/lib/about-page-content";
+import {
+  DEFAULT_FEATURES,
+  FEATURE_ICON_OPTIONS,
+  parseFeatures,
+  type FeatureIconKey,
+  type FeaturesSectionContent,
+} from "@/lib/home-features-content";
 
 export const Route = createFileRoute("/admin/pages")({
   head: () => ({ meta: [{ title: "Pages & Banners — Admin" }] }),
@@ -78,6 +85,7 @@ function PagesPage() {
   const [form, setForm] = useState<Partial<PageContent>>({});
   const [homeStats, setHomeStats] = useState<HomeStat[]>(DEFAULT_HOME_STATS);
   const [whyUsItems, setWhyUsItems] = useState<string[]>(DEFAULT_WHY_US);
+  const [featuresSection, setFeaturesSection] = useState<FeaturesSectionContent>(DEFAULT_FEATURES);
   const [ourStory, setOurStory] = useState<OurStoryContent>(DEFAULT_OUR_STORY);
   const [leadership, setLeadership] = useState<LeadershipContent>(DEFAULT_LEADERSHIP);
   const [file, setFile] = useState<File | null>(null);
@@ -106,6 +114,7 @@ function PagesPage() {
       if (current.key === "home") {
         setHomeStats(parseHomeStats(current.extra));
         setWhyUsItems(parseWhyUs(current.extra));
+        setFeaturesSection(parseFeatures(current.extra));
       }
       if (current.key === "about") {
         setOurStory(parseOurStory(current.extra));
@@ -134,6 +143,16 @@ function PagesPage() {
           ...extraBase,
           stats: homeStats.map((s) => ({ v: s.v.trim(), l: s.l.trim() })),
           whyUs: whyUsItems.map((s) => s.trim()).filter(Boolean),
+          features: {
+            eyebrow: featuresSection.eyebrow.trim(),
+            title: featuresSection.title.trim(),
+            subtitle: featuresSection.subtitle.trim(),
+            cards: featuresSection.cards.map((c) => ({
+              icon: c.icon,
+              title: c.title.trim(),
+              desc: c.desc.trim(),
+            })),
+          },
         };
       } else if (isAbout) {
         body.extra = {
@@ -153,6 +172,8 @@ function PagesPage() {
               name: p.name.trim(),
               role: p.role.trim(),
               quote: p.quote.trim(),
+              phone: p.phone.trim(),
+              email: p.email.trim(),
             })),
             stats: leadership.stats.map((s) => ({ v: s.v.trim(), l: s.l.trim() })),
           },
@@ -302,7 +323,7 @@ function PagesPage() {
 
                   <SectionHeading
                     title="Leadership"
-                    description="Two CEOs and one Manager — each with photo, name, role and quote on the About page."
+                    description="Two CEOs and one Manager — each with photo, name, role, phone, email and quote on the About page."
                   />
                   <div className="grid gap-4 rounded-2xl border border-border bg-background p-6">
                     <Field
@@ -341,7 +362,13 @@ function PagesPage() {
                         },
                       ] as const
                     ).map((slot, i) => {
-                      const person = leadership.people[i] ?? { name: "", role: "", quote: "" };
+                      const person = leadership.people[i] ?? {
+                        name: "",
+                        role: "",
+                        quote: "",
+                        phone: "",
+                        email: "",
+                      };
                       return (
                         <div
                           key={slot.label}
@@ -386,6 +413,32 @@ function PagesPage() {
                                 }))
                               }
                               placeholder={i < 2 ? "CEO" : "Manager"}
+                            />
+                            <Field
+                              label="Phone"
+                              value={person.phone}
+                              onChange={(v) =>
+                                setLeadership((s) => ({
+                                  ...s,
+                                  people: s.people.map((p, idx) =>
+                                    idx === i ? { ...p, phone: v } : p,
+                                  ),
+                                }))
+                              }
+                              placeholder="+91 98765 43210"
+                            />
+                            <Field
+                              label="Email"
+                              value={person.email}
+                              onChange={(v) =>
+                                setLeadership((s) => ({
+                                  ...s,
+                                  people: s.people.map((p, idx) =>
+                                    idx === i ? { ...p, email: v } : p,
+                                  ),
+                                }))
+                              }
+                              placeholder="name@example.com"
                             />
                           </div>
                           <TextArea
@@ -501,6 +554,128 @@ function PagesPage() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-background p-6">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-semibold">Features section</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          &quot;Why customers stay&quot; heading and promise cards on the home page.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFeaturesSection((s) => ({
+                            ...s,
+                            cards: [
+                              ...s.cards,
+                              { icon: "Fuel" as FeatureIconKey, title: "", desc: "" },
+                            ],
+                          }))
+                        }
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-medium hover:bg-accent"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> Add card
+                      </button>
+                    </div>
+
+                    <div className="mt-4 grid gap-4">
+                      <Field
+                        label="Section eyebrow"
+                        value={featuresSection.eyebrow}
+                        onChange={(v) => setFeaturesSection((s) => ({ ...s, eyebrow: v }))}
+                        placeholder="Why customers stay"
+                      />
+                      <Field
+                        label="Section title"
+                        value={featuresSection.title}
+                        onChange={(v) => setFeaturesSection((s) => ({ ...s, title: v }))}
+                      />
+                      <TextArea
+                        label="Section description"
+                        value={featuresSection.subtitle}
+                        onChange={(v) => setFeaturesSection((s) => ({ ...s, subtitle: v }))}
+                      />
+                    </div>
+
+                    <div className="mt-5 space-y-4">
+                      {featuresSection.cards.map((card, i) => (
+                        <div
+                          key={i}
+                          className="space-y-3 rounded-xl border border-border bg-muted/30 p-4"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-sm font-semibold">Card {i + 1}</h4>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFeaturesSection((s) => ({
+                                  ...s,
+                                  cards:
+                                    s.cards.length > 1
+                                      ? s.cards.filter((_, idx) => idx !== i)
+                                      : s.cards,
+                                }))
+                              }
+                              disabled={featuresSection.cards.length <= 1}
+                              className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+                              aria-label="Remove card"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <div>
+                            <Label>Icon</Label>
+                            <select
+                              value={card.icon}
+                              onChange={(e) =>
+                                setFeaturesSection((s) => ({
+                                  ...s,
+                                  cards: s.cards.map((c, idx) =>
+                                    idx === i
+                                      ? { ...c, icon: e.target.value as FeatureIconKey }
+                                      : c,
+                                  ),
+                                }))
+                              }
+                              className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary/60"
+                            >
+                              {FEATURE_ICON_OPTIONS.map((opt) => (
+                                <option key={opt.key} value={opt.key}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <Field
+                            label="Card title"
+                            value={card.title}
+                            onChange={(v) =>
+                              setFeaturesSection((s) => ({
+                                ...s,
+                                cards: s.cards.map((c, idx) =>
+                                  idx === i ? { ...c, title: v } : c,
+                                ),
+                              }))
+                            }
+                          />
+                          <TextArea
+                            label="Card description"
+                            value={card.desc}
+                            onChange={(v) =>
+                              setFeaturesSection((s) => ({
+                                ...s,
+                                cards: s.cards.map((c, idx) =>
+                                  idx === i ? { ...c, desc: v } : c,
+                                ),
+                              }))
+                            }
+                          />
                         </div>
                       ))}
                     </div>

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";
 import orbImg from "@/assets/total-orb.png";
+import { useSiteContent } from "@/lib/content";
 
 const STORAGE_KEY = "total_splash_seen";
 const DURATION = 3400;
@@ -15,6 +16,9 @@ function clearSplashLock() {
 export function SplashScreen() {
   // Always false on SSR — real state is synced in useLayoutEffect to avoid hydration mismatch.
   const [show, setShow] = useState(false);
+  const { data: SITE } = useSiteContent();
+  const customLogo = SITE.logoUrl || "";
+  const tagline = SITE.tagline || "Premium Energy · Trusted Service";
 
   useLayoutEffect(() => {
     const seen = sessionStorage.getItem(STORAGE_KEY);
@@ -142,40 +146,54 @@ export function SplashScreen() {
             </motion.div>
           ))}
 
-          {/* Logo lockup */}
+          {/* Logo lockup — custom upload replaces orb + wordmark */}
           <motion.div
             className="relative z-10 flex flex-col items-center"
             exit={{ scale: 0.32, y: "-42vh", opacity: 0 }}
             transition={{ duration: 0.9, ease: [0.83, 0, 0.17, 1] }}
           >
             <div className="relative flex items-center gap-2 md:gap-3">
-              {/* Orb: spins in from depth and locks into place */}
-              <motion.img
-                src={orbImg}
-                alt=""
-                draggable={false}
-                className="h-20 w-auto md:h-28"
-                initial={{ opacity: 0, scale: 2.6, rotate: -210 }}
-                animate={{
-                  opacity: 1,
-                  scale: [2.6, 0.92, 1],
-                  rotate: [-210, 10, 0],
-                }}
-                transition={{ duration: 1.35, ease: EASE_OUT, times: [0, 0.78, 1] }}
-              />
+              {customLogo ? (
+                <motion.img
+                  src={customLogo}
+                  alt={SITE.name || "Logo"}
+                  draggable={false}
+                  className="h-20 w-auto max-w-[min(80vw,420px)] object-contain md:h-28"
+                  initial={{ opacity: 0, scale: 2.6, rotate: -210 }}
+                  animate={{
+                    opacity: 1,
+                    scale: [2.6, 0.92, 1],
+                    rotate: [-210, 10, 0],
+                  }}
+                  transition={{ duration: 1.35, ease: EASE_OUT, times: [0, 0.78, 1] }}
+                />
+              ) : (
+                <>
+                  <motion.img
+                    src={orbImg}
+                    alt=""
+                    draggable={false}
+                    className="h-20 w-auto md:h-28"
+                    initial={{ opacity: 0, scale: 2.6, rotate: -210 }}
+                    animate={{
+                      opacity: 1,
+                      scale: [2.6, 0.92, 1],
+                      rotate: [-210, 10, 0],
+                    }}
+                    transition={{ duration: 1.35, ease: EASE_OUT, times: [0, 0.78, 1] }}
+                  />
+                  <motion.span
+                    aria-label="Sukka PR"
+                    className="select-none font-display text-4xl font-bold leading-none tracking-tight text-brand-red md:text-6xl"
+                    initial={{ opacity: 0, x: -24, clipPath: "inset(0 100% 0 0)" }}
+                    animate={{ opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)" }}
+                    transition={{ duration: 0.7, delay: 1.0, ease: EASE_OUT }}
+                  >
+                    Sukka PR
+                  </motion.span>
+                </>
+              )}
 
-              {/* Wordmark: wipes out from behind the orb */}
-              <motion.span
-                aria-label="Sukka PR"
-                className="select-none font-display text-4xl font-bold leading-none tracking-tight text-brand-red md:text-6xl"
-                initial={{ opacity: 0, x: -24, clipPath: "inset(0 100% 0 0)" }}
-                animate={{ opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)" }}
-                transition={{ duration: 0.7, delay: 1.0, ease: EASE_OUT }}
-              >
-                Sukka PR
-              </motion.span>
-
-              {/* Shine sweep across the assembled lockup */}
               <motion.div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
@@ -195,14 +213,13 @@ export function SplashScreen() {
               </motion.div>
             </div>
 
-            {/* Tagline */}
             <motion.p
               initial={{ opacity: 0, y: 10, letterSpacing: "0.1em" }}
               animate={{ opacity: 1, y: 0, letterSpacing: "0.42em" }}
               transition={{ duration: 0.8, delay: 1.55, ease: EASE_OUT }}
               className="mt-6 pl-[0.42em] text-[10px] font-medium uppercase text-muted-foreground md:text-xs"
             >
-              Premium Energy · Trusted Service
+              {tagline}
             </motion.p>
           </motion.div>
         </motion.div>

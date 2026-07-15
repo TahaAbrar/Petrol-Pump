@@ -1,9 +1,154 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Calendar, Fuel } from "lucide-react";
+import { ArrowRight, Calendar, ChevronLeft, ChevronRight, Fuel } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Reveal } from "@/components/Reveal";
 import { ColoredText } from "@/components/ColoredText";
 import { EventCardSlideshow } from "@/components/EventCardSlideshow";
 import { useEvents, useServices, type UiEvent, type UiService } from "@/lib/content";
+import { cn } from "@/lib/utils";
+
+const GAP_PX = 24; // matches gap-6
+
+function useVisibleCount() {
+  const [visible, setVisible] = useState(3);
+
+  useEffect(() => {
+    const update = () => {
+      if (window.innerWidth < 768) setVisible(1);
+      else if (window.innerWidth < 1024) setVisible(2);
+      else setVisible(3);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return visible;
+}
+
+function useTouchLike() {
+  const [touchLike, setTouchLike] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(hover: none)");
+    const update = () => setTouchLike(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  return touchLike;
+}
+
+/** One-row carousel: N cards visible; left/right arrows appear on hover when more exist. */
+function FeaturedCarousel({ children }: { children: ReactNode[] }) {
+  const items = children;
+  const visible = useVisibleCount();
+  const touchLike = useTouchLike();
+  const [index, setIndex] = useState(0);
+  const [hovering, setHovering] = useState(false);
+  const [stepPx, setStepPx] = useState(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const maxIndex = Math.max(0, items.length - visible);
+  const canNav = items.length > visible;
+  const showNav = canNav && (hovering || touchLike);
+
+  useEffect(() => {
+    setIndex((i) => Math.min(i, maxIndex));
+  }, [maxIndex]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const measure = () => {
+      const card = viewport.querySelector<HTMLElement>("[data-carousel-card]");
+      if (!card) return;
+      setStepPx(card.offsetWidth + GAP_PX);
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(viewport);
+    return () => ro.disconnect();
+  }, [items.length, visible]);
+
+  function prev() {
+    setIndex((i) => Math.max(0, i - 1));
+  }
+
+  function next() {
+    setIndex((i) => Math.min(maxIndex, i + 1));
+  }
+
+  return (
+    <div
+      className="group/carousel relative mt-12"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      <div ref={viewportRef} className="overflow-hidden">
+        <div
+          className="flex transition-transform duration-500 ease-out"
+          style={{
+            gap: GAP_PX,
+            transform: stepPx ? `translateX(-${index * stepPx}px)` : undefined,
+          }}
+        >
+          {items.map((child, i) => (
+            <div
+              key={i}
+              data-carousel-card
+              className="min-w-0 shrink-0"
+              style={{
+                width:
+                  visible === 1
+                    ? "100%"
+                    : `calc((100% - ${(visible - 1) * GAP_PX}px) / ${visible})`,
+              }}
+            >
+              {child}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {canNav && (
+        <>
+          <button
+            type="button"
+            onClick={prev}
+            disabled={index === 0}
+            aria-label="Previous"
+            className={cn(
+              "absolute left-0 top-1/2 z-10 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-border bg-background/95 text-foreground shadow-elegant backdrop-blur transition-all duration-300 md:h-12 md:w-12",
+              showNav && index > 0
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0",
+            )}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            disabled={index >= maxIndex}
+            aria-label="Next"
+            className={cn(
+              "absolute right-0 top-1/2 z-10 grid h-11 w-11 translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-border bg-background/95 text-foreground shadow-elegant backdrop-blur transition-all duration-300 md:h-12 md:w-12",
+              showNav && index < maxIndex
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0",
+            )}
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function FeaturedServicesSection() {
   const { data: services } = useServices();
@@ -29,13 +174,13 @@ export function FeaturedServicesSection() {
           </Link>
         </Reveal>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <FeaturedCarousel>
           {featured.map((s, i) => (
-            <Reveal key={s.id} delay={i * 0.06}>
+            <Reveal key={s.id} delay={Math.min(i, 2) * 0.06}>
               <ServiceCard service={s} />
             </Reveal>
           ))}
-        </div>
+        </FeaturedCarousel>
       </div>
     </section>
   );
@@ -65,13 +210,13 @@ export function FeaturedEventsSection() {
           </Link>
         </Reveal>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <FeaturedCarousel>
           {featured.map((e, i) => (
-            <Reveal key={e.id} delay={i * 0.06}>
+            <Reveal key={e.id} delay={Math.min(i, 2) * 0.06}>
               <EventCard event={e} />
             </Reveal>
           ))}
-        </div>
+        </FeaturedCarousel>
       </div>
     </section>
   );

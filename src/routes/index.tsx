@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import {
-  Fuel, Gauge, Sparkles, ShieldCheck, Clock, Wrench, Star, ArrowRight, MapPin, Quote,
+  Star, ArrowRight, MapPin, Quote,
 } from "lucide-react";
 import heroImg from "@/assets/hero-station.jpg";
 import { Reveal } from "@/components/Reveal";
@@ -12,6 +12,7 @@ import { FeaturedVideosSection } from "@/components/FeaturedVideosSection";
 import { FeaturedServicesSection, FeaturedEventsSection } from "@/components/HomeFeaturedSections";
 import { useSiteContent, useReviews, usePage, pageTextColors } from "@/lib/content";
 import { parseOurStory } from "@/lib/about-page-content";
+import { parseFeatures, resolveFeatureIcon } from "@/lib/home-features-content";
 import { mediaUrl } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
@@ -27,15 +28,6 @@ export const Route = createFileRoute("/")({
   }),
   component: HomePage,
 });
-
-const features = [
-  { icon: Fuel, title: "Premium Quality Fuel", desc: "Refined to the highest purity standards for maximum mileage and engine health." },
-  { icon: Gauge, title: "Fast Service", desc: "High-flow dispensers and trained crew get you back on the road in minutes." },
-  { icon: Sparkles, title: "Spotless Facilities", desc: "Hospital-grade cleanliness across the forecourt, washrooms and lounge." },
-  { icon: ShieldCheck, title: "Customer First", desc: "Every visit is backed by our satisfaction guarantee and care team." },
-  { icon: Clock, title: "Open 24 / 7", desc: "Day or night, holiday or rush hour — we're always ready for you." },
-  { icon: Wrench, title: "Modern Equipment", desc: "State-of-the-art pumps, EV chargers and calibrated meters you can trust." },
-];
 
 const whyUs = [
   "Trusted by 50,000+ regular customers",
@@ -210,28 +202,70 @@ function About() {
 }
 
 function Features() {
+  const { data: page } = usePage("home");
+  const features = parseFeatures(page?.extra);
+  const colors = pageTextColors(page);
+
   return (
     <section className="relative bg-mesh py-24 md:py-32">
       <div className="container-x">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Why customers stay</span>
-          <h2 className="mt-3 text-4xl font-bold md:text-5xl">Everything you'd expect, refined.</h2>
-          <p className="mt-4 text-muted-foreground">Six promises we keep on every visit, every single time.</p>
+          <ColoredText
+            as="span"
+            colors={colors}
+            field="features_eyebrow"
+            className="text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+          >
+            {features.eyebrow}
+          </ColoredText>
+          <ColoredText
+            as="h2"
+            colors={colors}
+            field="features_title"
+            className="mt-3 text-4xl font-bold md:text-5xl"
+          >
+            {features.title}
+          </ColoredText>
+          <ColoredText
+            as="p"
+            colors={colors}
+            field="features_subtitle"
+            className="mt-4 text-muted-foreground"
+          >
+            {features.subtitle}
+          </ColoredText>
         </Reveal>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f, i) => (
-            <Reveal key={f.title} delay={i * 0.06}>
-              <div className="group relative h-full overflow-hidden rounded-3xl border border-border bg-background p-7 transition-all duration-500 hover:-translate-y-1 hover:shadow-elegant">
-                <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-red/15 to-brand-blue/15 text-primary">
-                  <f.icon className="h-6 w-6" />
+          {features.cards.map((f, i) => {
+            const Icon = resolveFeatureIcon(f.icon);
+            return (
+              <Reveal key={`${f.title}-${i}`} delay={i * 0.06}>
+                <div className="group relative h-full overflow-hidden rounded-3xl border border-border bg-background p-7 transition-all duration-500 hover:-translate-y-1 hover:shadow-elegant">
+                  <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-red/15 to-brand-blue/15 text-primary">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <ColoredText
+                    as="h3"
+                    colors={colors}
+                    field={`features_card_${i}_title`}
+                    className="mt-5 text-lg font-semibold"
+                  >
+                    {f.title}
+                  </ColoredText>
+                  <ColoredText
+                    as="p"
+                    colors={colors}
+                    field={`features_card_${i}_desc`}
+                    className="mt-2 text-sm text-muted-foreground"
+                  >
+                    {f.desc}
+                  </ColoredText>
                 </div>
-                <h3 className="mt-5 text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

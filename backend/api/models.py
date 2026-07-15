@@ -16,6 +16,8 @@ class SiteSettings(models.Model):
     facebook = models.CharField(max_length=255, blank=True, default="#")
     twitter = models.CharField(max_length=255, blank=True, default="#")
     linkedin = models.CharField(max_length=255, blank=True, default="#")
+    # Optional custom brand mark — when empty, frontend uses the default orb + "Sukka PR".
+    logo = models.ImageField(upload_to="site/", blank=True, null=True)
     text_colors = models.JSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 

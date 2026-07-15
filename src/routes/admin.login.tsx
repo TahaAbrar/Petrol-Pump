@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Loader2, Lock, ShieldCheck, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import orbImg from "@/assets/total-orb.png";
+import { Logo } from "@/components/Logo";
 import { login } from "@/lib/admin-auth";
 import { getToken } from "@/lib/api";
 
@@ -45,7 +45,6 @@ function AdminLogin() {
 
   return (
     <div className="relative grid min-h-screen place-items-center overflow-hidden bg-mesh px-4">
-      {/* Drifting brand light blobs */}
       <motion.div
         className="absolute left-[15%] top-[18%] h-72 w-72 rounded-full blur-[100px]"
         style={{ background: "rgba(225,37,42,0.45)" }}
@@ -73,10 +72,7 @@ function AdminLogin() {
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <img src={orbImg} alt="" className="h-16 w-auto" draggable={false} />
-              <span className="font-display text-2xl font-bold leading-none tracking-tight text-brand-red">
-                Sukka PR
-              </span>
+              <Logo className="h-16 w-auto" />
             </motion.div>
             <h1 className="mt-4 text-2xl font-bold text-foreground">Admin Panel</h1>
             <p className="mt-1 text-sm text-muted-foreground">Sign in to manage Total Fuel Station</p>

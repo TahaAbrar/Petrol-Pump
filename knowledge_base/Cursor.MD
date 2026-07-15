@@ -9,14 +9,16 @@ Read this before making changes. Multiple agents work on this repo — keep it u
 ---
 
 ## 1. Logo (used everywhere)
-- Brand wordmark text is **Sukka PR** (replaced baked-in "TOTAL" image text). Orb mark unchanged.
-- Assets in `src/assets/`: `total-orb.png` (mark used live), `total-logo.png` / `total-wordmark.png` (legacy; no longer rendered).
-- Favicons in `public/`: `favicon.png`, `logo-192.png`, `logo-512.png` (referenced in `__root.tsx` head).
-- `src/components/Logo.tsx` = orb + "Sukka PR" text; used by Navbar, Footer, AdminShell.
-- Splash + admin login also show orb + "Sukka PR" (not the old TOTAL wordmark PNG).
+- **Default**: orb (`src/assets/total-orb.png`) + **"Sukka PR"** wordmark via `src/components/Logo.tsx`.
+- **Custom logo (optional)**: `SiteSettings.logo` ImageField (`upload_to="site/"`). Upload / replace / remove from **Admin → Dashboard → Brand logo**.
+- When `logo` is set, Navbar, Footer, Splash, AdminShell, and Admin login all show that image. When empty / removed, frontend falls back to the default orb + "Sukka PR".
+- Favicons in `public/` (`favicon.png`, `logo-192.png`, `logo-512.png`) stay as static assets (not swapped by custom logo).
+- Legacy assets `total-logo.png` / `total-wordmark.png` are unused.
 
 ## 2. Splash animation (`src/components/SplashScreen.tsx`)
-- Premium cinematic intro: dark gradient bg, drifting brand-color blobs, rotating ribbon rings, orbiting particles. The **orb** spins in from depth (scale/rotate) and locks; then the **"Sukka PR"** wordmark wipe-reveals; shine sweep; tagline fades in.
+- Premium cinematic intro: dark gradient bg, drifting brand-color blobs, rotating ribbon rings, orbiting particles.
+- **Default logo**: orb spins in from depth; **"Sukka PR"** wipe-reveals; shine sweep; tagline fades in (tagline from `SiteSettings`).
+- **Custom logo**: same motion applied to the uploaded image (no separate wordmark).
 - Shows once per browser session (sessionStorage key `total_splash_seen`, ~3.4s).
 - Initialized via inline `<script>` in `__root.tsx` before hydration: adds `splash-active` only when splash not yet seen, **removes** it when already seen. `html.splash-active` (in `styles.css`) hides header/main/footer and sets a dark body bg.
 - **Hydration-safe**: `SplashScreen` starts with `show=false` on SSR; `useLayoutEffect` syncs client state (no server/client mismatch). Failsafe timer + `pageshow` handler clear `splash-active` if stuck after reload/bfcache.
@@ -26,8 +28,10 @@ Read this before making changes. Multiple agents work on this repo — keep it u
 - `__root.tsx` hides public Navbar/Footer/Splash on `/admin/*` and mounts the sonner `<Toaster>` (success/error toasts on login + all saves).
 - `src/components/admin/AdminShell.tsx` = sidebar layout + auth guard (`useRequireAdmin`).
 - Auth: token stored in localStorage (`tfs_admin_token`). Helpers in `src/lib/admin-auth.tsx`. API client in `src/lib/api.ts`.
-- Admin can manage: site info/contact/socials, **map location**, page banners, home stats/why-us, about leadership (2 CEOs + Manager), **services** (+ **Feature toggle** → home), employees, events (+ **Feature toggle** → home), **featured videos** (home carousel below banner), reviews. Dashboard shows counts + banner status.
-- **Feature toggle**: same Switch on Services & Events admin lists. When ON, item appears in its own home section below Our Story (`FeaturedServicesSection` / `FeaturedEventsSection`).
+- Admin can manage: site info/contact/socials, **map location**, page banners, home stats/why-us, **home features section** (eyebrow/title/subtitle + cards with icon/title/desc), about leadership (2 CEOs + Manager — name/role/quote/**phone**/**email** + portraits), **brand logo** (dashboard), **services** (+ **Feature toggle** → home), employees, events (+ **Feature toggle** → home), **featured videos** (home carousel below banner), reviews. Dashboard shows counts + banner status + **Brand logo** uploader.
+- Leadership phone/email live in `PageContent.extra.leadership.people[]` (About page admin). Shown on public About `LeadershipSection` when set.
+- Clear custom logo: `PATCH /site/` with `{ "clear_logo": true }` (or `logo: null`).
+- **Feature toggle**: same Switch on Services & Events admin lists. When ON, item appears in its own home section below Our Story (`FeaturedServicesSection` / `FeaturedEventsSection`). Both featured sections use a **one-row carousel**: 3 cards visible on desktop (2 tablet / 1 mobile); left/right arrows show **on hover** only when there are more items than visible.
 - **Featured Videos**: model `FeaturedVideo`, admin `/admin/videos` with **↑↓ reorder** (sets play order on home). API `/featured-videos/`. Home carousel below hero — left/right arrows **appear only on hover** over the video.
 - **Events**: gallery + hover slideshow + video file on detail. `GET /events/{slug}/`.
 - **Services**: gallery + hover slideshow + related services. Public `/services`, `/services/$id`. Banner text uses `pt-28` so it sits below the fixed navbar.
@@ -39,17 +43,39 @@ Read this before making changes. Multiple agents work on this repo — keep it u
 - Frontend API base URL: `VITE_API_URL` (defaults to `http://localhost:8000/api`).
 
 ## 5. Backend / API (`backend/`)
-- Models (`api/models.py`): `SiteSettings`, `PageContent`, `Employee`, `EventItem` + `EventImage` (+ `featured`), `ServiceItem` + `ServiceImage` (+ `featured`), **`FeaturedVideo`**, `Review`.
-- Endpoints: … `events/`, `services/`, **`featured-videos/`**, `reviews/`, `dashboard/stats/`.
+- Models (`api/models.py`): `SiteSettings` (+ optional `logo`), `PageContent`, `Employee`, `EventItem` + `EventImage` (+ `featured`), `ServiceItem` + `ServiceImage` (+ `featured`), **`FeaturedVideo`**, `Review`.
+- Endpoints: … `site/` (supports logo upload + `clear_logo`), `events/`, `services/`, **`featured-videos/`**, `reviews/`, `dashboard/stats/`.
+- Latest migration: `0008_site_logo`.
 - CORS via `django-cors-headers` (allows :8080). Settings are env-driven (`backend/.env`, loaded by a tiny built-in loader).
 - `python manage.py seed` creates the **default admin (admin / admin123)** and imports all original content + images (incl. sample services: Premium Petrol, Diesel, EV Fast Charging, Air & Tyre Care).
-- DB: **PostgreSQL by default**; `USE_SQLITE=1` in `backend/.env` is currently ON so it runs with zero setup. JSONField list fields (e.g. employee `responsibilities`, service `highlights`) are saved as JSON, and images are uploaded via a **separate multipart PATCH** (so JSON + file never collide).
+- DB: **PostgreSQL** by default when `USE_SQLITE=0` in `backend/.env`. Set `USE_SQLITE=1` only for SQLite fallback.
 
-### Backend local setup (done)
-- `backend/.env` created with `USE_SQLITE=1` (no Postgres needed for local).
-- `backend/requirements.txt` pins: Django 6.0.6, DRF, cors-headers, psycopg[binary], Pillow.
-- Project venv lives at `Petrol-Pump/venv/` (recreated if shebang path breaks after folder moves).
-- Packages installed; migrate + seed already run. Admin: `admin` / `admin123`.
+### Backend local setup
+- Project venv lives at `Petrol-Pump/venv/`.
+- Packages installed. Admin: `admin` / `admin123`.
+- **Database: PostgreSQL (active)** — `petrolpump` / user `petrolpump` / pass `petrolpump` @ localhost:5432. `USE_SQLITE=0` in `backend/.env`.
+- One-time setup already run via `bash scripts/setup-postgres.sh` (tables migrated + SQLite dump loaded).
+- Re-run the script only if DB is wiped; set `USE_SQLITE=1` only for an emergency SQLite fallback.
+
+### Switching / (re)installing PostgreSQL
+```bash
+# From Petrol-Pump/ — will ask for your sudo password once
+bash scripts/setup-postgres.sh
+
+# Then restart backend
+cd backend && ../venv/bin/python manage.py runserver 8000
+```
+
+Manual equivalent:
+```bash
+sudo apt install -y postgresql postgresql-contrib
+sudo service postgresql start
+sudo -u postgres psql -c "CREATE USER petrolpump WITH PASSWORD 'petrolpump';"
+sudo -u postgres psql -c "CREATE DATABASE petrolpump OWNER petrolpump;"
+sudo -u postgres psql -d petrolpump -c "GRANT ALL ON SCHEMA public TO petrolpump; ALTER SCHEMA public OWNER TO petrolpump;"
+# set USE_SQLITE=0 in backend/.env
+cd backend && ../venv/bin/python manage.py migrate && ../venv/bin/python manage.py seed
+```
 
 ### Running everything
 ```bash
@@ -59,9 +85,7 @@ source venv/bin/activate
 # Backend
 cd backend
 ../venv/bin/python manage.py migrate
-../venv/bin/python manage.py seed
 ../venv/bin/python manage.py runserver 8000
-# or after activate: python manage.py runserver 8000
 
 # Frontend (separate terminal)
 npm run dev   # http://localhost:8080  (admin at /admin)
@@ -75,15 +99,11 @@ rm -rf venv && python3 -m venv venv
 ./venv/bin/pip install -r backend/requirements.txt
 ```
 
-### Switching to real PostgreSQL (needs sudo once)
-```bash
-sudo apt install -y postgresql
-sudo -u postgres psql -c "CREATE USER petrolpump WITH PASSWORD 'petrolpump';"
-sudo -u postgres psql -c "CREATE DATABASE petrolpump OWNER petrolpump;"
-# then set USE_SQLITE=0 in backend/.env and re-run migrate + seed
-```
 
-### Gotchas
-- `vite.config.ts` ignores `venv/`, `backend/`, `__pycache__/` from the dev watcher (they used to spam reloads).
-- `routeTree.gen.ts` is auto-generated by the router plugin while `npm run dev` runs — new `admin.*` routes need the dev server running once to register types.
-- Background processes don't persist between agent tool calls; run servers in your own terminals.
+### Data: what lives in the DB vs not
+**In DB (admin → API → SQLite/Postgres):** `SiteSettings` (incl. optional **`logo`**), `PageContent` (home/about/events/services banners + copy + about leadership people with phone/email + home stats/whyUs + **home `features` section**), `Employee`, `EventItem`/`EventImage` (+ featured), `ServiceItem`/`ServiceImage` (+ featured), `FeaturedVideo`, `Review`, Django admin user.
+**Not in DB (code/assets only):** splash animation chrome, **default** logo assets under `src/assets` & favicons under `public`, feature icon set (lucide keys in `home-features-content.ts`), `site-data.ts` (API loading placeholder only).
+**Uploads:** images/videos stored under `backend/media/` (filesystem), paths saved in DB fields (custom logo → `media/site/`).
+
+### Git / venv
+- `venv/` must stay ignored. If it was committed earlier: `git rm -r --cached venv` then commit (local folder stays). Do not push the venv folder.

@@ -105,6 +105,43 @@ class Command(BaseCommand):
                         "Modern, well-lit, secure infrastructure",
                         "Round-the-clock customer support",
                     ],
+                    "features": {
+                        "eyebrow": "Why customers stay",
+                        "title": "Everything you'd expect, refined.",
+                        "subtitle": "Six promises we keep on every visit, every single time.",
+                        "cards": [
+                            {
+                                "icon": "Fuel",
+                                "title": "Premium Quality Fuel",
+                                "desc": "Refined to the highest purity standards for maximum mileage and engine health.",
+                            },
+                            {
+                                "icon": "Gauge",
+                                "title": "Fast Service",
+                                "desc": "High-flow dispensers and trained crew get you back on the road in minutes.",
+                            },
+                            {
+                                "icon": "Sparkles",
+                                "title": "Spotless Facilities",
+                                "desc": "Hospital-grade cleanliness across the forecourt, washrooms and lounge.",
+                            },
+                            {
+                                "icon": "ShieldCheck",
+                                "title": "Customer First",
+                                "desc": "Every visit is backed by our satisfaction guarantee and care team.",
+                            },
+                            {
+                                "icon": "Clock",
+                                "title": "Open 24 / 7",
+                                "desc": "Day or night, holiday or rush hour — we're always ready for you.",
+                            },
+                            {
+                                "icon": "Wrench",
+                                "title": "Modern Equipment",
+                                "desc": "State-of-the-art pumps, EV chargers and calibrated meters you can trust.",
+                            },
+                        ],
+                    },
                 },
             },
             {
@@ -142,6 +179,8 @@ class Command(BaseCommand):
                                     "We're not just selling fuel — we're selling time, trust and the confidence "
                                     "that your vehicle is in safe hands."
                                 ),
+                                "phone": "",
+                                "email": "",
                             },
                             {
                                 "name": "Ms. Priya Sharma",
@@ -150,6 +189,8 @@ class Command(BaseCommand):
                                     "Growth means nothing without integrity. We build every partnership "
                                     "and every litre of fuel on that foundation."
                                 ),
+                                "phone": "",
+                                "email": "",
                             },
                             {
                                 "name": "Mr. Rohit Khan",
@@ -158,6 +199,8 @@ class Command(BaseCommand):
                                     "My job is to make every shift seamless — safe pumps, clean forecourt, "
                                     "and a team that greets every customer like family."
                                 ),
+                                "phone": "",
+                                "email": "",
                             },
                         ],
                         "stats": [

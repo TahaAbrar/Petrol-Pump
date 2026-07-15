@@ -66,7 +66,24 @@ class SiteSettingsViewSet(viewsets.ViewSet):
 
     def update_settings(self, request):
         obj = SiteSettings.load()
-        serializer = SiteSettingsSerializer(obj, data=request.data, partial=True)
+        data = request.data
+
+        clear_flag = str(data.get("clear_logo", "")).lower() in ("1", "true", "yes")
+        # JSON null / empty string clears the custom logo (fallback to default brand mark).
+        logo_absent = "logo" in data and not request.FILES.get("logo") and data.get("logo") in (
+            None, "", "null",
+        )
+        if clear_flag or logo_absent:
+            if obj.logo:
+                obj.logo.delete(save=False)
+            obj.logo = None
+            obj.save(update_fields=["logo", "updated_at"])
+            only_clearing = clear_flag or logo_absent
+            other_keys = [k for k in data.keys() if k not in ("logo", "clear_logo")]
+            if only_clearing and not other_keys and not request.FILES:
+                return Response(SiteSettingsSerializer(obj).data)
+
+        serializer = SiteSettingsSerializer(obj, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

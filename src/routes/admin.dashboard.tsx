@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Users, CalendarDays, Star, FileText, Clock, ArrowRight, Loader2, Settings, Fuel, Video,
+  ImagePlus, Trash2, Save,
 } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { apiFetch, type DashboardStats } from "@/lib/api";
+import { Logo } from "@/components/Logo";
+import { apiFetch, mediaUrl, type DashboardStats, type SiteSettings } from "@/lib/api";
+import { refreshPublicContent } from "@/lib/content";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Admin" }] }),
@@ -67,6 +72,8 @@ function DashboardPage() {
             ))}
           </div>
 
+          <BrandLogoSection />
+
           {data && data.reviews_pending > 0 && (
             <div className="flex items-center gap-3 rounded-2xl border border-brand-orange/30 bg-brand-orange/5 p-4 text-sm">
               <Clock className="h-5 w-5 text-brand-orange" />
@@ -124,6 +131,151 @@ function DashboardPage() {
         </div>
       )}
     </AdminShell>
+  );
+}
+
+function BrandLogoSection() {
+  const qc = useQueryClient();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+
+  const { data: site, isLoading } = useQuery<SiteSettings>({
+    queryKey: ["admin", "site"],
+    queryFn: () => apiFetch<SiteSettings>("/site/"),
+  });
+
+  const saveLogo = useMutation({
+    mutationFn: async (next: File | null) => {
+      if (next) {
+        const fd = new FormData();
+        fd.append("logo", next);
+        return apiFetch<SiteSettings>("/site/", { method: "PATCH", body: fd });
+      }
+      return apiFetch<SiteSettings>("/site/", {
+        method: "PATCH",
+        body: { clear_logo: true },
+      });
+    },
+    onSuccess: async (_data, next) => {
+      setFile(null);
+      await qc.invalidateQueries({ queryKey: ["admin", "site"] });
+      await refreshPublicContent(qc);
+      toast.success(next ? "Logo updated" : "Custom logo removed — default brand mark restored");
+    },
+    onError: (e: any) => toast.error("Logo update failed", { description: e?.message }),
+  });
+
+  const preview = file
+    ? URL.createObjectURL(file)
+    : site?.logo
+      ? mediaUrl(site.logo)
+      : null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.25, duration: 0.4 }}
+      className="rounded-2xl border border-border bg-background p-6"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Brand logo
+          </h2>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+            Upload your own logo for the navbar, footer, splash animation, and admin. If you
+            remove it (or never upload one), the default Sukka PR mark is used.
+          </p>
+        </div>
+        {site?.logo ? (
+          <span className="rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-600">
+            Custom logo active
+          </span>
+        ) : (
+          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+            Using default logo
+          </span>
+        )}
+      </div>
+
+      {isLoading ? (
+        <Loader2 className="mt-6 h-6 w-6 animate-spin text-primary" />
+      ) : (
+        <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="flex h-28 min-w-[200px] items-center justify-center rounded-2xl border border-dashed border-border bg-muted/40 px-6">
+            {preview ? (
+              <img
+                src={preview}
+                alt="Logo preview"
+                className="max-h-20 w-auto max-w-full object-contain"
+              />
+            ) : (
+              <Logo className="h-12 w-auto" src="" />
+            )}
+          </div>
+
+          <div className="flex flex-1 flex-col gap-3">
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-accent"
+              >
+                <ImagePlus className="h-4 w-4" />
+                {file || site?.logo ? "Choose new logo" : "Upload logo"}
+              </button>
+              {file && (
+                <button
+                  type="button"
+                  disabled={saveLogo.isPending}
+                  onClick={() => saveLogo.mutate(file)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                >
+                  {saveLogo.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Save logo
+                </button>
+              )}
+              {(site?.logo || file) && (
+                <button
+                  type="button"
+                  disabled={saveLogo.isPending}
+                  onClick={() => {
+                    if (file) {
+                      setFile(null);
+                      if (inputRef.current) inputRef.current.value = "";
+                      return;
+                    }
+                    saveLogo.mutate(null);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/5 disabled:opacity-60"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {file ? "Cancel selection" : "Remove custom logo"}
+                </button>
+              )}
+            </div>
+            {file && (
+              <p className="text-xs text-muted-foreground">
+                Selected: <span className="font-medium text-foreground">{file.name}</span> — click Save
+                to apply site-wide.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 }
 

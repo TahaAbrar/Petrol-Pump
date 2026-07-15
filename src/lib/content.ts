@@ -21,7 +21,7 @@ import {
 } from "./site-data";
 import { parseTextColors, type TextColors } from "./text-colors";
 
-export type UiSite = typeof STATIC_SITE & { textColors: TextColors };
+export type UiSite = typeof STATIC_SITE & { textColors: TextColors; logoUrl: string };
 export type UiReview = (typeof STATIC_REVIEWS)[number] & { textColors: TextColors };
 export type UiEmployee = typeof STATIC_EMPLOYEES[number] & { textColors: TextColors };
 export type UiEvent = typeof STATIC_EVENTS[number] & { textColors: TextColors; featured: boolean };
@@ -66,6 +66,7 @@ function mapSite(s: ApiSite): UiSite {
       linkedin: s.linkedin || "#",
     },
     textColors: parseTextColors(s.text_colors),
+    logoUrl: mediaUrl(s.logo) || "",
   };
 }
 
@@ -179,7 +180,7 @@ export async function refreshEvent(qc: QueryClient, slug: string) {
 }
 
 export function useSiteContent() {
-  const fallback: UiSite = { ...STATIC_SITE, textColors: {} };
+  const fallback: UiSite = { ...STATIC_SITE, textColors: {}, logoUrl: "" };
   const query = useQuery<UiSite>({
     queryKey: publicContentKeys.site,
     queryFn: async () => mapSite(await apiFetch<ApiSite>("/site/", { auth: false })),

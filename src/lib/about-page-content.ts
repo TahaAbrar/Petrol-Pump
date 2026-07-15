@@ -13,6 +13,8 @@ export type LeadershipPerson = {
   name: string;
   role: string;
   quote: string;
+  phone: string;
+  email: string;
 };
 
 export type LeadershipContent = {
@@ -39,18 +41,24 @@ export const DEFAULT_LEADERSHIP_PEOPLE: LeadershipPerson[] = [
     role: "CEO",
     quote:
       "We're not just selling fuel — we're selling time, trust and the confidence that your vehicle is in safe hands.",
+    phone: "",
+    email: "",
   },
   {
     name: "Ms. Priya Sharma",
     role: "CEO",
     quote:
       "Growth means nothing without integrity. We build every partnership and every litre of fuel on that foundation.",
+    phone: "",
+    email: "",
   },
   {
     name: "Mr. Rohit Khan",
     role: "Manager",
     quote:
       "My job is to make every shift seamless — safe pumps, clean forecourt, and a team that greets every customer like family.",
+    phone: "",
+    email: "",
   },
 ];
 
@@ -80,6 +88,8 @@ function parsePerson(raw: unknown, fallback: LeadershipPerson): LeadershipPerson
     name: pickString(src, "name", fallback.name),
     role: pickString(src, "role", fallback.role),
     quote: pickString(src, "quote", fallback.quote),
+    phone: pickString(src, "phone", fallback.phone),
+    email: pickString(src, "email", fallback.email),
   };
 }
 
@@ -121,7 +131,7 @@ export function parseLeadership(extra?: Record<string, unknown>): LeadershipCont
     const legacyRole = pickString(src, "founderRole", DEFAULT_LEADERSHIP_PEOPLE[0].role);
     const legacyQuote = pickString(src, "quote", DEFAULT_LEADERSHIP_PEOPLE[0].quote);
     people = [
-      { name: legacyName, role: legacyRole, quote: legacyQuote },
+      { name: legacyName, role: legacyRole, quote: legacyQuote, phone: "", email: "" },
       { ...DEFAULT_LEADERSHIP_PEOPLE[1] },
       { ...DEFAULT_LEADERSHIP_PEOPLE[2] },
     ];

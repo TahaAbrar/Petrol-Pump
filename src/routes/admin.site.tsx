@@ -38,8 +38,10 @@ function SitePage() {
   }, [data]);
 
   const mutation = useMutation({
-    mutationFn: (body: Partial<SiteSettings>) =>
-      apiFetch<SiteSettings>("/site/", { method: "PATCH", body }),
+    mutationFn: (body: Partial<SiteSettings>) => {
+      const { logo: _logo, ...rest } = body;
+      return apiFetch<SiteSettings>("/site/", { method: "PATCH", body: rest });
+    },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["admin", "site"] });
       await refreshPublicContent(qc);

@@ -156,3 +156,13 @@ CORS_ALLOWED_ORIGINS = env(
 ).split(",")
 CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG)
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in env("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+
+# Behind nginx TLS termination
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True

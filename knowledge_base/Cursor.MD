@@ -47,14 +47,16 @@ Read this before making changes. Multiple agents work on this repo — keep it u
 - Endpoints: … `site/` (supports logo upload + `clear_logo`), `events/`, `services/`, **`featured-videos/`**, `reviews/`, `dashboard/stats/`.
 - Latest migration: `0008_site_logo`.
 - CORS via `django-cors-headers` (allows :8080). Settings are env-driven (`backend/.env`, loaded by a tiny built-in loader).
+- **Media in production**: `backend/urls.py` always mounts `django.views.static.serve` for `/media/` (and `/static/`) because Django’s `static()` helper is a no-op when `DEBUG=False`. Nginx proxies `/media/` → gunicorn. Without this, live images/videos 404.
 - `python manage.py seed` creates the **default admin (admin / admin123)** and imports all original content + images (incl. sample services: Premium Petrol, Diesel, EV Fast Charging, Air & Tyre Care).
 - DB: **PostgreSQL** by default when `USE_SQLITE=0` in `backend/.env`. Set `USE_SQLITE=1` only for SQLite fallback.
 
 ### Backend local setup
-- Project venv lives at `Petrol-Pump/venv/`.
+- Project venv lives at `Petrol-Pump/venv/` (also usable: `backend/venv/`).
 - Packages installed. Admin: `admin` / `admin123`.
 - **Database: PostgreSQL (active)** — `petrolpump` / user `petrolpump` / pass `petrolpump` @ localhost:5432. `USE_SQLITE=0` in `backend/.env`.
-- One-time setup already run via `bash scripts/setup-postgres.sh` (tables migrated + SQLite dump loaded).
+- One-time setup: Postgres installed, cluster online on 5432, migrations applied, `scripts/sqlite_data_dump.json` loaded (2026-07-16).
+- If `Connection refused` on 5432: Postgres is stopped/missing → `service postgresql start` (or re-run `bash scripts/setup-postgres.sh`). This host has no systemd; use `service postgresql start`, not `systemctl`.
 - Re-run the script only if DB is wiped; set `USE_SQLITE=1` only for an emergency SQLite fallback.
 
 ### Switching / (re)installing PostgreSQL
@@ -110,5 +112,44 @@ rm -rf venv && python3 -m venv venv
 
 ---
 
-## 6. Deploy note
-Render / Koyeb / Neon PaaS deploy files were removed. Stack is local **PostgreSQL** + Django `runserver` / Vite. VPS go-live setup will be added later when needed — keep `USE_SQLITE=0` and `POSTGRES_*` in `backend/.env`.
+## 6. VPS production deploy (sukkagroupofcompanies.com)
+Server IP: **169.58.29.84**. Same domain serves frontend + backend via nginx.
+
+### Architecture
+- **Frontend**: Nitro Node SSR on `127.0.0.1:8080` (`sukka-frontend.service`) — entry `.output/server/index.mjs`
+- **Backend**: gunicorn on `127.0.0.1:8000` (`sukka-gunicorn.service`)
+- **Nginx**: public `:80` (and `:443` after SSL)
+  - `/api/`, `/media/`, `/static/`, `/django-admin/` → gunicorn
+  - everything else → frontend SSR
+- React admin: `https://DOMAIN/admin/` · Django admin: `/django-admin/`
+- Build uses `nitro: { preset: "node-server" }` in `vite.config.ts` and `VITE_API_URL=https://DOMAIN/api`
+
+### One-shot deploy / refresh
+```bash
+cd /root/suka-petrol/Petrol-Pump
+bash scripts/deploy-vps.sh
+# optional: CERTBOT_EMAIL=you@email.com DOMAIN=sukkagroupofcompanies.com bash scripts/deploy-vps.sh
+```
+
+### SSL (Let’s Encrypt)
+Installed **2026-07-16** for `sukkagroupofcompanies.com` + `www` (auto-renew via certbot timer). Expires ~2026-10-14.
+HTTP → HTTPS redirect is on. Re-issue only if cert is gone:
+```bash
+certbot --nginx -d sukkagroupofcompanies.com -d www.sukkagroupofcompanies.com \
+  --agree-tos -m admin@sukkagroupofcompanies.com --redirect
+```
+Live URLs: https://sukkagroupofcompanies.com/ · https://sukkagroupofcompanies.com/api/ · https://sukkagroupofcompanies.com/admin/
+
+### Useful commands
+```bash
+systemctl status sukka-gunicorn sukka-frontend nginx
+systemctl restart sukka-gunicorn sukka-frontend
+journalctl -u sukka-gunicorn -u sukka-frontend -f
+```
+
+Config files in repo: `scripts/gunicorn.service`, `scripts/frontend.service`, `scripts/nginx-sukka.conf`, `scripts/deploy-vps.sh`.
+
+---
+
+## 7. Deploy note (legacy)
+Render / Koyeb / Neon PaaS deploy files were removed. Keep `USE_SQLITE=0` and `POSTGRES_*` in `backend/.env`. Production also needs `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `DEBUG=False`.

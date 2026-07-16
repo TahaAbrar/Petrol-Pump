@@ -1,0 +1,23 @@
+[Unit]
+Description=Sukka Petrol Django (gunicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/suka-petrol/Petrol-Pump/backend
+EnvironmentFile=/root/suka-petrol/Petrol-Pump/backend/.env
+ExecStart=/root/suka-petrol/Petrol-Pump/backend/venv/bin/gunicorn \
+  --workers 3 \
+  --bind 127.0.0.1:8000 \
+  --timeout 120 \
+  --access-logfile - \
+  --error-logfile - \
+  backend.wsgi:application
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

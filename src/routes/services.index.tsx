@@ -4,6 +4,7 @@ import { ArrowRight, Fuel, Package } from "lucide-react";
 import heroStation from "@/assets/hero-station.jpg";
 import { Reveal } from "@/components/Reveal";
 import { ColoredText } from "@/components/ColoredText";
+import { BannerSlider, pageBannerUrls } from "@/components/BannerSlider";
 import { EventCardSlideshow } from "@/components/EventCardSlideshow";
 import { useServices, usePage, pageTextColors } from "@/lib/content";
 import { mediaUrl } from "@/lib/api";
@@ -30,16 +31,15 @@ export const Route = createFileRoute("/services/")({
 function ServicesListPage() {
   const { data: services } = useServices();
   const { data: page } = usePage("services");
-  const banner = page?.banner ? mediaUrl(page.banner) : heroStation;
   const colors = pageTextColors(page);
   const titleHasCustomColor = Boolean(colors.title);
+  const images = pageBannerUrls(page, mediaUrl, heroStation);
 
   return (
     <div>
-      <section className="relative -mt-20 h-[55svh] min-h-[400px] overflow-hidden">
-        <img src={banner} alt="Services" className="h-full w-full object-cover" width={1920} height={900} />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background" />
-        <div className="container-x absolute inset-x-0 bottom-0 top-0 z-10 flex flex-col justify-end pb-12 pt-28 md:pt-32">
+      <section className="relative h-[92svh] min-h-[560px] overflow-hidden">
+        <BannerSlider images={images} alt="Services" />
+        <div className="container-x absolute inset-x-0 bottom-0 top-0 z-10 flex flex-col justify-end pb-12 pt-8">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <ColoredText
               as="span"

@@ -1,6 +1,8 @@
 [Unit]
 Description=Sukka Petrol Frontend (Nitro Node SSR)
-After=network.target
+Documentation=file:///root/suka-petrol/Petrol-Pump/knowledge_base/Cursor.MD
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -14,7 +16,10 @@ Environment=NITRO_HOST=127.0.0.1
 Environment=NITRO_PORT=8080
 ExecStart=/usr/bin/node /root/suka-petrol/Petrol-Pump/.output/server/index.mjs
 Restart=always
-RestartSec=3
+RestartSec=5
+StartLimitIntervalSec=0
+KillMode=mixed
+TimeoutStopSec=20
 
 [Install]
 WantedBy=multi-user.target

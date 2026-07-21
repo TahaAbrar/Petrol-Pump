@@ -1,0 +1,8 @@
+[Unit]
+Description=Sukka Petrol keep-alive check (API + FE + Postgres)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/suka-petrol/Petrol-Pump/scripts/ensure-live.sh
+Nice=10

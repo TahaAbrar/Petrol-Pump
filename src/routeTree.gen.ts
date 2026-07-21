@@ -12,14 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as EventsRouteImport } from './routes/events'
+import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServicesIndexRouteImport } from './routes/services.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as BusinessesIndexRouteImport } from './routes/businesses.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AboutIndexRouteImport } from './routes/about.index'
 import { Route as ServicesIdRouteImport } from './routes/services.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as EmployeesIdRouteImport } from './routes/employees.$id'
+import { Route as BusinessesSlugRouteImport } from './routes/businesses.$slug'
 import { Route as AdminVideosRouteImport } from './routes/admin.videos'
 import { Route as AdminSiteRouteImport } from './routes/admin.site'
 import { Route as AdminServicesRouteImport } from './routes/admin.services'
@@ -29,7 +33,11 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEventsRouteImport } from './routes/admin.events'
 import { Route as AdminEmployeesRouteImport } from './routes/admin.employees'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminBusinessesRouteImport } from './routes/admin.businesses'
 import { Route as AdminAccountRouteImport } from './routes/admin.account'
+import { Route as AdminAboutRouteImport } from './routes/admin.about'
+import { Route as AboutOurStoryRouteImport } from './routes/about.our-story'
+import { Route as AboutLeadershipRouteImport } from './routes/about.leadership'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -44,6 +52,11 @@ const ServicesRoute = ServicesRouteImport.update({
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessesRoute = BusinessesRouteImport.update({
+  id: '/businesses',
+  path: '/businesses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -66,10 +79,20 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => EventsRoute,
 } as any)
+const BusinessesIndexRoute = BusinessesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BusinessesRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AboutIndexRoute = AboutIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AboutRoute,
 } as any)
 const ServicesIdRoute = ServicesIdRouteImport.update({
   id: '/$id',
@@ -85,6 +108,11 @@ const EmployeesIdRoute = EmployeesIdRouteImport.update({
   id: '/employees/$id',
   path: '/employees/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessesSlugRoute = BusinessesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BusinessesRoute,
 } as any)
 const AdminVideosRoute = AdminVideosRouteImport.update({
   id: '/admin/videos',
@@ -131,19 +159,44 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminBusinessesRoute = AdminBusinessesRouteImport.update({
+  id: '/admin/businesses',
+  path: '/admin/businesses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAccountRoute = AdminAccountRouteImport.update({
   id: '/admin/account',
   path: '/admin/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAboutRoute = AdminAboutRouteImport.update({
+  id: '/admin/about',
+  path: '/admin/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutOurStoryRoute = AboutOurStoryRouteImport.update({
+  id: '/our-story',
+  path: '/our-story',
+  getParentRoute: () => AboutRoute,
+} as any)
+const AboutLeadershipRoute = AboutLeadershipRouteImport.update({
+  id: '/leadership',
+  path: '/leadership',
+  getParentRoute: () => AboutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
+  '/businesses': typeof BusinessesRouteWithChildren
   '/events': typeof EventsRouteWithChildren
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/about/leadership': typeof AboutLeadershipRoute
+  '/about/our-story': typeof AboutOurStoryRoute
+  '/admin/about': typeof AdminAboutRoute
   '/admin/account': typeof AdminAccountRoute
+  '/admin/businesses': typeof AdminBusinessesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/employees': typeof AdminEmployeesRoute
   '/admin/events': typeof AdminEventsRoute
@@ -153,18 +206,24 @@ export interface FileRoutesByFullPath {
   '/admin/services': typeof AdminServicesRoute
   '/admin/site': typeof AdminSiteRoute
   '/admin/videos': typeof AdminVideosRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
   '/employees/$id': typeof EmployeesIdRoute
   '/events/$id': typeof EventsIdRoute
   '/services/$id': typeof ServicesIdRoute
+  '/about/': typeof AboutIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/businesses/': typeof BusinessesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/services/': typeof ServicesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/about/leadership': typeof AboutLeadershipRoute
+  '/about/our-story': typeof AboutOurStoryRoute
+  '/admin/about': typeof AdminAboutRoute
   '/admin/account': typeof AdminAccountRoute
+  '/admin/businesses': typeof AdminBusinessesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/employees': typeof AdminEmployeesRoute
   '/admin/events': typeof AdminEventsRoute
@@ -174,21 +233,29 @@ export interface FileRoutesByTo {
   '/admin/services': typeof AdminServicesRoute
   '/admin/site': typeof AdminSiteRoute
   '/admin/videos': typeof AdminVideosRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
   '/employees/$id': typeof EmployeesIdRoute
   '/events/$id': typeof EventsIdRoute
   '/services/$id': typeof ServicesIdRoute
+  '/about': typeof AboutIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/businesses': typeof BusinessesIndexRoute
   '/events': typeof EventsIndexRoute
   '/services': typeof ServicesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
+  '/businesses': typeof BusinessesRouteWithChildren
   '/events': typeof EventsRouteWithChildren
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/about/leadership': typeof AboutLeadershipRoute
+  '/about/our-story': typeof AboutOurStoryRoute
+  '/admin/about': typeof AdminAboutRoute
   '/admin/account': typeof AdminAccountRoute
+  '/admin/businesses': typeof AdminBusinessesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/employees': typeof AdminEmployeesRoute
   '/admin/events': typeof AdminEventsRoute
@@ -198,10 +265,13 @@ export interface FileRoutesById {
   '/admin/services': typeof AdminServicesRoute
   '/admin/site': typeof AdminSiteRoute
   '/admin/videos': typeof AdminVideosRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
   '/employees/$id': typeof EmployeesIdRoute
   '/events/$id': typeof EventsIdRoute
   '/services/$id': typeof ServicesIdRoute
+  '/about/': typeof AboutIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/businesses/': typeof BusinessesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/services/': typeof ServicesIndexRoute
 }
@@ -210,10 +280,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/businesses'
     | '/events'
     | '/services'
     | '/sitemap.xml'
+    | '/about/leadership'
+    | '/about/our-story'
+    | '/admin/about'
     | '/admin/account'
+    | '/admin/businesses'
     | '/admin/dashboard'
     | '/admin/employees'
     | '/admin/events'
@@ -223,18 +298,24 @@ export interface FileRouteTypes {
     | '/admin/services'
     | '/admin/site'
     | '/admin/videos'
+    | '/businesses/$slug'
     | '/employees/$id'
     | '/events/$id'
     | '/services/$id'
+    | '/about/'
     | '/admin/'
+    | '/businesses/'
     | '/events/'
     | '/services/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/sitemap.xml'
+    | '/about/leadership'
+    | '/about/our-story'
+    | '/admin/about'
     | '/admin/account'
+    | '/admin/businesses'
     | '/admin/dashboard'
     | '/admin/employees'
     | '/admin/events'
@@ -244,20 +325,28 @@ export interface FileRouteTypes {
     | '/admin/services'
     | '/admin/site'
     | '/admin/videos'
+    | '/businesses/$slug'
     | '/employees/$id'
     | '/events/$id'
     | '/services/$id'
+    | '/about'
     | '/admin'
+    | '/businesses'
     | '/events'
     | '/services'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/businesses'
     | '/events'
     | '/services'
     | '/sitemap.xml'
+    | '/about/leadership'
+    | '/about/our-story'
+    | '/admin/about'
     | '/admin/account'
+    | '/admin/businesses'
     | '/admin/dashboard'
     | '/admin/employees'
     | '/admin/events'
@@ -267,21 +356,27 @@ export interface FileRouteTypes {
     | '/admin/services'
     | '/admin/site'
     | '/admin/videos'
+    | '/businesses/$slug'
     | '/employees/$id'
     | '/events/$id'
     | '/services/$id'
+    | '/about/'
     | '/admin/'
+    | '/businesses/'
     | '/events/'
     | '/services/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  AboutRoute: typeof AboutRouteWithChildren
+  BusinessesRoute: typeof BusinessesRouteWithChildren
   EventsRoute: typeof EventsRouteWithChildren
   ServicesRoute: typeof ServicesRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AdminAboutRoute: typeof AdminAboutRoute
   AdminAccountRoute: typeof AdminAccountRoute
+  AdminBusinessesRoute: typeof AdminBusinessesRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminEmployeesRoute: typeof AdminEmployeesRoute
   AdminEventsRoute: typeof AdminEventsRoute
@@ -318,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/businesses': {
+      id: '/businesses'
+      path: '/businesses'
+      fullPath: '/businesses'
+      preLoaderRoute: typeof BusinessesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -346,12 +448,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/businesses/': {
+      id: '/businesses/'
+      path: '/'
+      fullPath: '/businesses/'
+      preLoaderRoute: typeof BusinessesIndexRouteImport
+      parentRoute: typeof BusinessesRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/about/': {
+      id: '/about/'
+      path: '/'
+      fullPath: '/about/'
+      preLoaderRoute: typeof AboutIndexRouteImport
+      parentRoute: typeof AboutRoute
     }
     '/services/$id': {
       id: '/services/$id'
@@ -373,6 +489,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/employees/$id'
       preLoaderRoute: typeof EmployeesIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/businesses/$slug': {
+      id: '/businesses/$slug'
+      path: '/$slug'
+      fullPath: '/businesses/$slug'
+      preLoaderRoute: typeof BusinessesSlugRouteImport
+      parentRoute: typeof BusinessesRoute
     }
     '/admin/videos': {
       id: '/admin/videos'
@@ -437,6 +560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/businesses': {
+      id: '/admin/businesses'
+      path: '/admin/businesses'
+      fullPath: '/admin/businesses'
+      preLoaderRoute: typeof AdminBusinessesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/account': {
       id: '/admin/account'
       path: '/admin/account'
@@ -444,8 +574,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/about': {
+      id: '/admin/about'
+      path: '/admin/about'
+      fullPath: '/admin/about'
+      preLoaderRoute: typeof AdminAboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about/our-story': {
+      id: '/about/our-story'
+      path: '/our-story'
+      fullPath: '/about/our-story'
+      preLoaderRoute: typeof AboutOurStoryRouteImport
+      parentRoute: typeof AboutRoute
+    }
+    '/about/leadership': {
+      id: '/about/leadership'
+      path: '/leadership'
+      fullPath: '/about/leadership'
+      preLoaderRoute: typeof AboutLeadershipRouteImport
+      parentRoute: typeof AboutRoute
+    }
   }
 }
+
+interface AboutRouteChildren {
+  AboutLeadershipRoute: typeof AboutLeadershipRoute
+  AboutOurStoryRoute: typeof AboutOurStoryRoute
+  AboutIndexRoute: typeof AboutIndexRoute
+}
+
+const AboutRouteChildren: AboutRouteChildren = {
+  AboutLeadershipRoute: AboutLeadershipRoute,
+  AboutOurStoryRoute: AboutOurStoryRoute,
+  AboutIndexRoute: AboutIndexRoute,
+}
+
+const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
+
+interface BusinessesRouteChildren {
+  BusinessesSlugRoute: typeof BusinessesSlugRoute
+  BusinessesIndexRoute: typeof BusinessesIndexRoute
+}
+
+const BusinessesRouteChildren: BusinessesRouteChildren = {
+  BusinessesSlugRoute: BusinessesSlugRoute,
+  BusinessesIndexRoute: BusinessesIndexRoute,
+}
+
+const BusinessesRouteWithChildren = BusinessesRoute._addFileChildren(
+  BusinessesRouteChildren,
+)
 
 interface EventsRouteChildren {
   EventsIdRoute: typeof EventsIdRoute
@@ -476,11 +655,14 @@ const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  AboutRoute: AboutRouteWithChildren,
+  BusinessesRoute: BusinessesRouteWithChildren,
   EventsRoute: EventsRouteWithChildren,
   ServicesRoute: ServicesRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AdminAboutRoute: AdminAboutRoute,
   AdminAccountRoute: AdminAccountRoute,
+  AdminBusinessesRoute: AdminBusinessesRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminEmployeesRoute: AdminEmployeesRoute,
   AdminEventsRoute: AdminEventsRoute,

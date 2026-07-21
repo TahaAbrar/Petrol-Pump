@@ -60,7 +60,7 @@ function ServicePage() {
 
   return (
     <article className="pb-8">
-      <section className="relative -mt-20 min-h-[72svh] overflow-hidden">
+      <section className="relative min-h-[72svh] overflow-hidden">
         {heroImage ? (
           <img
             src={heroImage}
@@ -72,10 +72,8 @@ function ServicePage() {
         ) : (
           <div className="absolute inset-0 bg-mesh" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/55 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-background/20" />
 
-        <div className="container-x relative z-10 flex min-h-[72svh] flex-col justify-end pb-14 pt-28">
+        <div className="container-x relative z-10 flex min-h-[72svh] flex-col justify-end pb-14 pt-8">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <Link
               to="/services"

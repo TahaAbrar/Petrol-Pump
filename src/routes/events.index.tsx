@@ -4,6 +4,7 @@ import { Calendar, ArrowRight } from "lucide-react";
 import eventsBanner from "@/assets/events-banner.jpg";
 import { Reveal } from "@/components/Reveal";
 import { ColoredText } from "@/components/ColoredText";
+import { BannerSlider, pageBannerUrls } from "@/components/BannerSlider";
 import { EventCardSlideshow } from "@/components/EventCardSlideshow";
 import { useEvents, usePage, pageTextColors } from "@/lib/content";
 import { mediaUrl } from "@/lib/api";
@@ -26,14 +27,13 @@ export const Route = createFileRoute("/events/")({
 function EventsListPage() {
   const { data: events } = useEvents();
   const { data: page } = usePage("events");
-  const banner = page?.banner ? mediaUrl(page.banner) : eventsBanner;
   const colors = pageTextColors(page);
   const titleHasCustomColor = Boolean(colors.title);
+  const images = pageBannerUrls(page, mediaUrl, eventsBanner);
   return (
     <div>
-      <section className="relative -mt-20 h-[55svh] min-h-[400px] overflow-hidden">
-        <img src={banner} alt="Events" className="h-full w-full object-cover" width={1920} height={900} />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background" />
+      <section className="relative h-[92svh] min-h-[560px] overflow-hidden">
+        <BannerSlider images={images} alt="Events" />
         <div className="container-x absolute inset-x-0 bottom-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <ColoredText as="span" colors={colors} field="subtitle" className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">

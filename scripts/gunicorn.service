@@ -1,7 +1,9 @@
 [Unit]
 Description=Sukka Petrol Django (gunicorn)
-After=network.target postgresql.service
-Wants=postgresql.service
+Documentation=file:///root/suka-petrol/Petrol-Pump/knowledge_base/Cursor.MD
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
 
 [Service]
 Type=simple
@@ -9,6 +11,8 @@ User=root
 Group=root
 WorkingDirectory=/root/suka-petrol/Petrol-Pump/backend
 EnvironmentFile=/root/suka-petrol/Petrol-Pump/backend/.env
+# Wait until Postgres accepts TCP before starting workers
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 30); do (echo > /dev/tcp/127.0.0.1/5432) >/dev/null 2>&1 && exit 0; sleep 1; done; echo "Postgres not ready on :5432" >&2; exit 1'
 ExecStart=/root/suka-petrol/Petrol-Pump/backend/venv/bin/gunicorn \
   --workers 3 \
   --bind 127.0.0.1:8000 \
@@ -17,7 +21,11 @@ ExecStart=/root/suka-petrol/Petrol-Pump/backend/venv/bin/gunicorn \
   --error-logfile - \
   backend.wsgi:application
 Restart=always
-RestartSec=3
+RestartSec=5
+# Survive brief DB blips without flapping forever
+StartLimitIntervalSec=0
+KillMode=mixed
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

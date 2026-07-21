@@ -11,6 +11,10 @@ import {
   type FeaturedVideo as ApiFeaturedVideo,
   type Review as ApiReview,
   type PageContent,
+  type BusinessHub as ApiBusinessHub,
+  type BusinessListItem,
+  type BusinessDetail as ApiBusinessDetail,
+  type AboutPerson,
 } from "./api";
 import {
   SITE as STATIC_SITE,
@@ -40,6 +44,9 @@ export const publicContentKeys = {
   event: (slug: string) => ["event", slug] as const,
   service: (slug: string) => ["service", slug] as const,
   allPages: ["page"] as const,
+  businessHub: ["business-hub"] as const,
+  businesses: ["businesses"] as const,
+  business: (slug: string) => ["business", slug] as const,
 };
 
 const publicQueryDefaults = {
@@ -59,6 +66,10 @@ function mapSite(s: ApiSite): UiSite {
     address: s.address,
     hours: s.hours,
     mapsQuery: s.maps_query,
+    footerDescription:
+      s.footer_description ||
+      "Premium Energy. Trusted Service. Powering your journey with quality fuel and uncompromising service.",
+    faqs: Array.isArray(s.faqs) ? s.faqs : [],
     socials: {
       instagram: s.instagram || "#",
       facebook: s.facebook || "#",
@@ -157,6 +168,10 @@ export async function refreshPublicContent(
     qc.invalidateQueries({ queryKey: publicContentKeys.services, refetchType: "all" }),
     qc.invalidateQueries({ queryKey: ["service"], refetchType: "all" }),
     qc.invalidateQueries({ queryKey: publicContentKeys.featuredVideos, refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: publicContentKeys.businessHub, refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: publicContentKeys.businesses, refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: ["business"], refetchType: "all" }),
+    qc.invalidateQueries({ queryKey: ["about-people"], refetchType: "all" }),
   ];
 
   if (opts?.pageKey) {
@@ -313,6 +328,60 @@ export function usePage(key: string) {
       }
     },
     placeholderData: null,
+    ...publicQueryDefaults,
+  });
+}
+
+export function useBusinessHub() {
+  return useQuery<ApiBusinessHub | null>({
+    queryKey: publicContentKeys.businessHub,
+    queryFn: async () => {
+      try {
+        return await apiFetch<ApiBusinessHub>("/business-hub/", { auth: false });
+      } catch {
+        return null;
+      }
+    },
+    placeholderData: null,
+    ...publicQueryDefaults,
+  });
+}
+
+export function useBusinesses() {
+  return useQuery<BusinessListItem[]>({
+    queryKey: publicContentKeys.businesses,
+    queryFn: async () => {
+      const data = await apiFetch<BusinessListItem[]>("/businesses/", { auth: false });
+      return data.slice().sort((a, b) => a.order - b.order);
+    },
+    placeholderData: [],
+    ...publicQueryDefaults,
+  });
+}
+
+export function useBusiness(slug: string) {
+  return useQuery<ApiBusinessDetail | null>({
+    queryKey: publicContentKeys.business(slug),
+    queryFn: async () => {
+      try {
+        return await apiFetch<ApiBusinessDetail>(`/businesses/${slug}/`, { auth: false });
+      } catch {
+        return null;
+      }
+    },
+    placeholderData: null,
+    ...publicQueryDefaults,
+  });
+}
+
+export function useAboutPeople(kind?: "leader" | "director") {
+  return useQuery<AboutPerson[]>({
+    queryKey: ["about-people", kind ?? "all"],
+    queryFn: async () => {
+      const path = kind ? `/about-people/?kind=${kind}` : "/about-people/";
+      return apiFetch<AboutPerson[]>(path, { auth: false });
+    },
+    placeholderData: [],
     ...publicQueryDefaults,
   });
 }

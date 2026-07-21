@@ -109,7 +109,8 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var k="total_splash_seen";if(sessionStorage.getItem(k)){document.documentElement.classList.remove("splash-active")}else{document.documentElement.classList.add("splash-active")}}catch(e){document.documentElement.classList.remove("splash-active")}})();`,
+            // Public splash only — never hide admin header/main with splash-active.
+            __html: `(function(){try{var k="total_splash_seen";var admin=location.pathname.indexOf("/admin")===0;if(admin||sessionStorage.getItem(k)){document.documentElement.classList.remove("splash-active")}else{document.documentElement.classList.add("splash-active")}}catch(e){document.documentElement.classList.remove("splash-active")}})();`,
           }}
         />
         <HeadContent />
@@ -127,6 +128,13 @@ function RootComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
 
+  // Admin has no SplashScreen — clear splash-active so AdminShell header/main stay visible.
+  useEffect(() => {
+    if (isAdmin) {
+      document.documentElement.classList.remove("splash-active");
+    }
+  }, [isAdmin]);
+
   return (
     <QueryClientProvider client={queryClient}>
       {isAdmin ? (
@@ -135,7 +143,7 @@ function RootComponent() {
         <>
           <SplashScreen />
           <Navbar />
-          <main className="min-h-screen pt-20">
+          <main className="min-h-screen pt-16 lg:pt-[4.25rem]">
             <Outlet />
           </main>
           <Footer />

@@ -1,9 +1,23 @@
 // Lightweight API client for the Django backend.
-const RAW_API_URL =
-  (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
-  "http://localhost:8000/api";
+// Production builds set VITE_API_URL via `.env.production` / deploy-vps.sh.
+// Runtime fallback: on the live domain never call localhost (browser can't reach VPS loopback).
+function resolveApiUrl(): string {
+  const fromEnv =
+    (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_URL) ||
+    "";
+  if (fromEnv && String(fromEnv).trim()) {
+    return String(fromEnv).replace(/\/$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host && host !== "localhost" && host !== "127.0.0.1") {
+      return `${window.location.origin}/api`;
+    }
+  }
+  return "http://localhost:8000/api";
+}
 
-export const API_URL = RAW_API_URL.replace(/\/$/, "");
+export const API_URL = resolveApiUrl();
 export const API_ORIGIN = API_URL.replace(/\/api$/, "");
 
 const TOKEN_KEY = "tfs_admin_token";
@@ -107,7 +121,21 @@ export type SiteSettings = {
   twitter: string;
   linkedin: string;
   logo: string | null;
+  footer_description?: string;
+  faqs?: { question: string; answer: string }[];
   text_colors?: Record<string, string>;
+};
+
+export type BannerImageItem = {
+  id: number;
+  image: string | null;
+  order: number;
+};
+
+export type ActiveUndo = {
+  scope: string;
+  token: string;
+  expires_at: string;
 };
 
 export type PageContent = {
@@ -117,12 +145,28 @@ export type PageContent = {
   subtitle: string;
   body: string;
   banner: string | null;
+  banner_images?: BannerImageItem[];
+  story_gallery?: { id: number; image: string | null; caption: string; order: number }[];
+  active_undos?: ActiveUndo[];
   story_image: string | null;
   founder_image: string | null;
   ceo2_image: string | null;
   manager_image: string | null;
   extra: Record<string, any>;
   updated_at: string;
+  undo?: ActiveUndo;
+};
+
+export type AboutPerson = {
+  id: number;
+  kind: "leader" | "director";
+  name: string;
+  role: string;
+  message: string;
+  image: string | null;
+  border_color: string;
+  order: number;
+  created_at: string;
 };
 
 export type Employee = {
@@ -220,4 +264,76 @@ export type DashboardStats = {
   reviews_pending: number;
   pages: number;
   page_banners: Record<string, boolean>;
+};
+
+export type BusinessBannerImageItem = {
+  id: number;
+  image: string | null;
+  order: number;
+};
+
+export type BusinessGalleryImageItem = {
+  id: number;
+  section: "background" | "investment" | "overview";
+  image: string | null;
+  order: number;
+};
+
+export type BusinessTeamMember = {
+  id: number;
+  name: string;
+  role: string;
+  image: string | null;
+  name_style: Record<string, unknown>;
+  role_style: Record<string, unknown>;
+  order: number;
+  created_at: string;
+};
+
+export type BusinessHub = {
+  id: number;
+  banner_subtitle: string;
+  banner_title: string;
+  banner_body: string;
+  banner_fields?: Record<string, boolean>;
+  overview_title: string;
+  overview_subtitle: string;
+  overview_html: string;
+  overview_image: string | null;
+  businesses_title: string;
+  businesses_subtitle: string;
+  banner_images: BusinessBannerImageItem[];
+  updated_at: string;
+};
+
+export type BusinessListItem = {
+  id: number;
+  slug: string;
+  name: string;
+  short_description: string;
+  card_image: string | null;
+  icon_key?: string;
+  accent_color?: string;
+  address?: string;
+  phone?: string;
+  maps_query?: string;
+  order: number;
+  is_active: boolean;
+  updated_at: string;
+};
+
+export type BusinessDetail = BusinessListItem & {
+  banner_subtitle: string;
+  banner_title: string;
+  banner_body: string;
+  background_html: string;
+  investment_history_html: string;
+  overview_html: string;
+  why_us?: string[];
+  address: string;
+  maps_query: string;
+  section_meta?: Record<string, any>;
+  banner_images: BusinessBannerImageItem[];
+  gallery_images: BusinessGalleryImageItem[];
+  team_members: BusinessTeamMember[];
 };

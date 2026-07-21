@@ -50,12 +50,29 @@ sleep 1
 echo "==> Installing systemd units…"
 cp "$ROOT/scripts/gunicorn.service" /etc/systemd/system/sukka-gunicorn.service
 cp /tmp/sukka-frontend.service /etc/systemd/system/sukka-frontend.service
+cp "$ROOT/scripts/sukka-watchdog.service" /etc/systemd/system/sukka-watchdog.service
+cp "$ROOT/scripts/sukka-watchdog.timer" /etc/systemd/system/sukka-watchdog.timer
+chmod +x "$ROOT/scripts/ensure-live.sh"
+
+# Ensure /run/postgresql exists (tmpfs) before enabling PG-dependent units
+mkdir -p /run/postgresql
+chown postgres:postgres /run/postgresql 2>/dev/null || true
+chmod 2775 /run/postgresql 2>/dev/null || true
+
 systemctl daemon-reload
+systemctl enable --now postgresql.service || true
 systemctl enable --now sukka-gunicorn.service
 systemctl enable --now sukka-frontend.service
+systemctl enable --now sukka-watchdog.timer
 systemctl restart sukka-gunicorn.service sukka-frontend.service
+# Immediate keep-alive pass
+"$ROOT/scripts/ensure-live.sh" || true
 
 echo "==> Installing nginx site…"
+# Never wipe a live Certbot SSL config blindly — back up first, then re-apply SSL if certs exist.
+if [[ -f /etc/nginx/sites-available/sukka ]]; then
+  cp -a /etc/nginx/sites-available/sukka "/etc/nginx/sites-available/sukka.bak.$(date +%Y%m%d%H%M%S)" || true
+fi
 cp "$ROOT/scripts/nginx-sukka.conf" /etc/nginx/sites-available/sukka
 ln -sfn /etc/nginx/sites-available/sukka /etc/nginx/sites-enabled/sukka
 rm -f /etc/nginx/sites-enabled/default
@@ -70,22 +87,36 @@ curl -sS -o /dev/null -w "Nginx Host: %{http_code}\n" -H "Host: ${DOMAIN}" http:
 
 echo ""
 echo "==> SSL (certbot)…"
-# Only works once public DNS A record points to THIS server (169.58.29.84)
-if dig @8.8.8.8 +short "$DOMAIN" A 2>/dev/null | grep -q '169.58.29.84'; then
+# Prefer existing Let's Encrypt certs. Deploy copies a HTTP-only nginx template, so we MUST
+# re-attach SSL every deploy or browsers (HSTS) hit :443 → connection refused.
+CERT_DIR="/etc/letsencrypt/live/${DOMAIN}"
+if [[ -f "${CERT_DIR}/fullchain.pem" && -f "${CERT_DIR}/privkey.pem" ]]; then
   certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" --redirect \
-    && echo "SSL OK" \
+    && echo "SSL OK (re-attached existing cert)" \
+    || echo "WARN: certbot failed to re-attach SSL — restore from /etc/nginx/sites-available/sukka.bak.*"
+elif command -v dig >/dev/null 2>&1 && dig @8.8.8.8 +short "$DOMAIN" A 2>/dev/null | grep -q '169.58.29.84'; then
+  certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" --redirect \
+    && echo "SSL OK (new cert)" \
     || echo "WARN: certbot failed — check DNS / ports 80+443"
 else
-  echo "SKIP SSL: DNS for $DOMAIN is NOT pointing to 169.58.29.84 yet."
-  echo "  Current A records:"
-  dig @8.8.8.8 +short "$DOMAIN" A 2>/dev/null || true
-  echo "  After you change DNS → A → 169.58.29.84, run:"
+  echo "SKIP SSL: no existing cert at ${CERT_DIR} and DNS check inconclusive."
+  echo "  After DNS A → 169.58.29.84, run:"
   echo "    certbot --nginx -d $DOMAIN -d www.$DOMAIN --agree-tos -m $EMAIL --redirect"
+fi
+
+# Confirm :443 is actually listening when certs exist
+if [[ -f "${CERT_DIR}/fullchain.pem" ]]; then
+  if ss -tln | grep -q ':443'; then
+    curl -sS -o /dev/null -w "HTTPS: %{http_code}\n" "https://${DOMAIN}/" || true
+  else
+    echo "ERROR: SSL cert exists but nothing is listening on :443"
+    exit 1
+  fi
 fi
 
 echo ""
 echo "✅ Deploy done"
-echo "   Site:  http://${DOMAIN}/  (https after SSL)"
-echo "   API:   http://${DOMAIN}/api/"
-echo "   Admin: http://${DOMAIN}/admin/  (React)  |  /django-admin/ (Django)"
+echo "   Site:  https://${DOMAIN}/"
+echo "   API:   https://${DOMAIN}/api/"
+echo "   Admin: https://${DOMAIN}/admin/  (React)  |  /django-admin/ (Django)"
 echo "   systemctl status sukka-gunicorn sukka-frontend nginx"

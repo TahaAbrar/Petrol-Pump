@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import SiteSettings, PageContent, Employee, EventItem, Review, ServiceItem, FeaturedVideo
+from .models import SiteSettings, PageContent, BannerImage, UndoSnapshot, Employee, EventItem, Review, ServiceItem, FeaturedVideo
 
 
 @admin.register(SiteSettings)
@@ -11,6 +11,18 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 @admin.register(PageContent)
 class PageContentAdmin(admin.ModelAdmin):
     list_display = ["key", "title", "updated_at"]
+
+
+@admin.register(BannerImage)
+class BannerImageAdmin(admin.ModelAdmin):
+    list_display = ["page", "order", "archived", "created_at"]
+    list_filter = ["archived", "page"]
+
+
+@admin.register(UndoSnapshot)
+class UndoSnapshotAdmin(admin.ModelAdmin):
+    list_display = ["page", "scope", "token", "expires_at", "created_at"]
+    list_filter = ["scope"]
 
 
 @admin.register(Employee)

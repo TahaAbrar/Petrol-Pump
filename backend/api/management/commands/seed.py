@@ -21,6 +21,8 @@ from api.models import (
     Review,
     ServiceItem,
     ServiceImage,
+    BusinessHub,
+    Business,
 )
 
 ASSETS = settings.BASE_DIR.parent / "src" / "assets"
@@ -52,6 +54,7 @@ class Command(BaseCommand):
         self.seed_events()
         self.seed_services()
         self.seed_reviews()
+        self.seed_businesses()
         self.stdout.write(self.style.SUCCESS("\nSeed complete."))
         self.stdout.write(
             f"Admin login -> username: {ADMIN_USERNAME}  password: {ADMIN_PASSWORD}"
@@ -244,6 +247,11 @@ class Command(BaseCommand):
                 attach_image(obj, "ceo2_image", ceo2_image)
             if manager_image:
                 attach_image(obj, "manager_image", manager_image)
+            # Ensure at least one live BannerImage slide for the public slider.
+            from api.models import BannerImage
+
+            if obj.banner and not obj.banner_images.filter(archived=False).exists():
+                BannerImage.objects.create(page=obj, image=obj.banner.name, order=0)
         self.stdout.write("Seeded pages")
 
     def seed_employees(self):
@@ -442,3 +450,35 @@ class Command(BaseCommand):
                 name=d["name"], text=d["text"], defaults={**d, "order": i, "approved": True}
             )
         self.stdout.write("Seeded reviews")
+
+    def seed_businesses(self):
+        BusinessHub.load()
+        businesses = [
+            {
+                "slug": "sukka-fabrics",
+                "name": "Sukka Fabrics",
+                "short_description": "Premium textiles and fabric solutions for retail and wholesale partners.",
+                "order": 0,
+            },
+            {
+                "slug": "sukka-traders",
+                "name": "Sukka Traders",
+                "short_description": "Trusted trading house connecting quality suppliers with growing markets.",
+                "order": 1,
+            },
+            {
+                "slug": "awan-cargo-services",
+                "name": "Awan Cargo Services",
+                "short_description": "Reliable logistics and cargo handling with a focus on speed and safety.",
+                "order": 2,
+            },
+            {
+                "slug": "sukka-petroleum-services",
+                "name": "Sukka Petroleum Services",
+                "short_description": "Modern fuel retail and energy services built around customer trust.",
+                "order": 3,
+            },
+        ]
+        for data in businesses:
+            Business.objects.update_or_create(slug=data["slug"], defaults=data)
+        self.stdout.write("Seeded businesses")

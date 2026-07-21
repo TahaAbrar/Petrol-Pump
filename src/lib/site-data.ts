@@ -14,6 +14,9 @@ export const SITE = {
   address: "123 National Highway, Sector 12, Mumbai, India 400001",
   hours: "Open 24 / 7",
   mapsQuery: "Total+Fuel+Station+Mumbai",
+  footerDescription:
+    "Premium Energy. Trusted Service. Powering your journey with quality fuel and uncompromising service.",
+  faqs: [] as { question: string; answer: string }[],
   socials: {
     instagram: "#",
     facebook: "#",

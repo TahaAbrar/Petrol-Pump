@@ -2,17 +2,28 @@ import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Twitter, MapPin, Phone, Mail, Clock } from "lucide-react";
 import { Logo } from "./Logo";
 import { ColoredText } from "./ColoredText";
-import { useSiteContent } from "@/lib/content";
+import { useBusinesses, useSiteContent } from "@/lib/content";
 
 export function Footer() {
   const { data: SITE } = useSiteContent();
+  const { data: businesses } = useBusinesses();
+  const footerDesc =
+    SITE.footerDescription?.trim() ||
+    `${SITE.tagline} Powering your journey with quality fuel and uncompromising service.`;
+  const locations = (businesses ?? []).filter((b) => (b.address ?? "").trim());
+
   return (
     <footer className="border-t border-border bg-mesh">
       <div className="container-x grid gap-10 py-16 md:grid-cols-4">
         <div className="md:col-span-1">
           <Logo className="h-10 w-auto" />
-          <ColoredText as="p" colors={SITE.textColors} field="tagline" className="mt-4 text-sm text-muted-foreground">
-            {SITE.tagline} Powering your journey with quality fuel and uncompromising service.
+          <ColoredText
+            as="p"
+            colors={SITE.textColors}
+            field="footer_description"
+            className="mt-4 text-sm text-muted-foreground"
+          >
+            {footerDesc}
           </ColoredText>
           <div className="mt-5 flex gap-2">
             {[
@@ -62,18 +73,25 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold">Location</h4>
-          <ColoredText as="p" colors={SITE.textColors} field="address" className="mt-4 flex gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" /> {SITE.address}
-          </ColoredText>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${SITE.mapsQuery}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold hover:border-primary hover:text-primary"
-          >
-            Open in Google Maps
-          </a>
+          <h4 className="text-sm font-semibold">Locations</h4>
+          <ul className="mt-4 space-y-4 text-sm text-muted-foreground">
+            {locations.length > 0 ? (
+              locations.map((b) => (
+                <li key={b.slug} className="flex gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>
+                    <span className="block font-semibold text-foreground">{b.name}</span>
+                    {b.address}
+                  </span>
+                </li>
+              ))
+            ) : (
+              <li className="flex gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>Locations coming soon</span>
+              </li>
+            )}
+          </ul>
         </div>
       </div>
 
